@@ -11,11 +11,12 @@ const CONFIG_OFICIAL = {
   COBERTURA: "CCINT — Centro Cristiano Internacional",
   
   // Dynamic Replaceable URLs (Configurables)
-  WHATSAPP_URL: "https://wa.me/56944574436", // Reemplazar con nro real
+  WHATSAPP_URL: "https://wa.me/56944574436",
   PHONE_NUMBER: "tel:+56944574436",
-  INSTAGRAM_URL: "https://instagram.com/familiasdepaz",
+  INSTAGRAM_URL: "https://www.instagram.com/iglesiafamiliasdepaz/",
   YOUTUBE_URL: "https://www.youtube.com/@iglesiafamiliasdepaz",
-  ZOOM_URL: "https://zoom.us/j/0000000000",
+  TIKTOK_URL: "https://www.tiktok.com/@iglesiafamiliasdepaz?_r=1&_t=ZS-98svCKEJf4n",
+  ZOOM_URL: "https://us06web.zoom.us/j/84074389263?pwd=giJOikf9zMkaUESMNuSQiNmrb6RvAU.1",
   MAPS_URL: "https://maps.app.goo.gl/4VhWWrfdAqXyxSXX6"
 };
 
@@ -83,6 +84,7 @@ function injectOfficialLinks() {
   document.querySelectorAll('[data-link="whatsapp"]').forEach(el => el.href = CONFIG_OFICIAL.WHATSAPP_URL);
   document.querySelectorAll('[data-link="phone"]').forEach(el => el.href = CONFIG_OFICIAL.PHONE_NUMBER);
   document.querySelectorAll('[data-link="instagram"]').forEach(el => el.href = CONFIG_OFICIAL.INSTAGRAM_URL);
+  document.querySelectorAll('[data-link="tiktok"]').forEach(el => el.href = CONFIG_OFICIAL.TIKTOK_URL);
   document.querySelectorAll('[data-link="youtube"]').forEach(el => el.href = CONFIG_OFICIAL.YOUTUBE_URL);
   document.querySelectorAll('[data-link="zoom"]').forEach(el => el.href = CONFIG_OFICIAL.ZOOM_URL);
   document.querySelectorAll('[data-link="maps"]').forEach(el => el.href = CONFIG_OFICIAL.MAPS_URL);

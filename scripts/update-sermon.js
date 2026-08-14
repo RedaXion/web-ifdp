@@ -11,15 +11,34 @@ https.get(FEED_URL, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
   res.on('data', (chunk) => xml += chunk);
   res.on('end', () => {
     try {
-      const entryMatch = xml.match(/<entry>(.*?)<\/entry>/s);
-      if (!entryMatch) {
+      const entryMatches = xml.match(/<entry>.*?<\/entry>/gs);
+      if (!entryMatches || entryMatches.length === 0) {
         console.error('No video entries found in YouTube feed.');
         process.exit(1);
       }
       
-      const entry = entryMatch[1];
-      const videoIdMatch = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
-      const titleMatch = entry.match(/<title>([^<]+)<\/title>/);
+      let validEntry = null;
+      for (const entry of entryMatches) {
+        const titleMatch = entry.match(/<title>([^<]+)<\/title>/);
+        if (titleMatch) {
+          const titleText = titleMatch[1].toLowerCase();
+          if (!titleText.includes('discipulado') && 
+              !titleText.includes('reunión') && 
+              !titleText.includes('reunion') && 
+              !titleText.includes('podcast')) {
+            validEntry = entry;
+            break;
+          }
+        }
+      }
+      
+      if (!validEntry) {
+        console.log('No new valid video found (excluding discipulado, reunión, podcast).');
+        process.exit(0);
+      }
+      
+      const videoIdMatch = validEntry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
+      const titleMatch = validEntry.match(/<title>([^<]+)<\/title>/);
       
       if (!videoIdMatch || !titleMatch) {
         console.error('Could not parse video ID or title.');
@@ -29,7 +48,7 @@ https.get(FEED_URL, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
       const videoId = videoIdMatch[1].trim();
       const title = titleMatch[1].trim();
       
-      console.log(`Latest video found: ${title} (${videoId})`);
+      console.log(`Latest valid video found: ${title} (${videoId})`);
       
       let html = fs.readFileSync(INDEX_HTML_PATH, 'utf8');
       
