@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Discipulado IFDP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .portal-body { background-color: var(--bg-main); min-height: 100vh; }
+    .portal-header { background: #0F172A; color: white; padding: 16px 0; }
+    .auth-card { background: white; max-width: 420px; margin: 80px auto; padding: 40px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-light); }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border-light); font-size: 0.95rem; }
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+    .admin-card { background: white; padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); }
+    .badge-role { font-size:0.75rem; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+    .role-admin { background:#FEE2E2; color:#DC2626; }
+    .role-paidagogo { background:#E0F2FE; color:#0284C7; }
+    .role-student { background:#FEF3C7; color:#D97706; }
+  </style>
+</head>
+<body class="portal-body">
+
+  <header class="portal-header">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" class="logo-link" style="color: white;">
+        <div class="logo-icon" style="background: var(--accent-orange);"><i class="ri-shield-keyhole-line"></i></div>
+        <div class="logo-text">
+          <span class="logo-title" style="color: white;">ADMINISTRACIÓN IFDP</span>
+          <span class="logo-subtitle" style="color: var(--accent-orange);">Control Total de Discipulado</span>
+        </div>
+      </a>
+      <div id="userHeaderActions" style="display: none;">
+        <span id="welcomeUserName" style="font-weight: 600; margin-right: 15px; color:white;"></span>
+        <button onclick="logout()" class="btn btn-outline" style="padding: 8px 18px; font-size: 0.85rem; color:white; border-color:rgba(255,255,255,0.3);"><i class="ri-logout-box-r-line"></i> Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 40px 0;">
+    
+    <!-- LOGIN FORM ADMIN -->
+    <div id="loginView" class="auth-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="logo-icon" style="margin: 0 auto 15px auto; background: #0F172A;"><i class="ri-admin-line"></i></div>
+        <h2>Acceso Administrador</h2>
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">Acceso exclusivo para gestión general de discipulado.</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Usuario o Email Admin</label>
+          <input type="text" id="loginUsername" placeholder="admin" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <div id="loginError" style="color: #DC2626; font-size: 0.85rem; margin-bottom: 15px; display: none;"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; background: #0F172A;">Entrar al Dashboard Admin</button>
+      </form>
+      <div style="margin-top: 20px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+        Usuario de prueba: <strong>admin</strong> / Clave: <strong>admin123</strong>
+      </div>
+    </div>
+
+    <!-- DASHBOARD ADMIN -->
+    <div id="dashboardView" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+          <span class="section-badge"><i class="ri-settings-4-line"></i> Dashboard de Administración</span>
+          <h2>Gestión de Clases, Contenidos & Usuarios</h2>
+        </div>
+        <div>
+          <button onclick="openClassModal()" class="btn btn-primary"><i class="ri-video-add-line"></i> + Subir Nueva Clase</button>
+          <button onclick="openUserModal()" class="btn btn-dark" style="margin-left: 10px;"><i class="ri-user-add-line"></i> + Crear Usuario</button>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+        
+        <!-- Panel de Clases & Videos -->
+        <div class="admin-card">
+          <h3 style="margin-bottom: 20px;"><i class="ri-video-upload-line text-orange"></i> Clases & Presentaciones PPT</h3>
+          <div id="adminClassesList"></div>
+        </div>
+
+        <!-- Panel de Usuarios Registrados -->
+        <div class="admin-card">
+          <h3 style="margin-bottom: 20px;"><i class="ri-group-line text-orange"></i> Usuarios del Sistema</h3>
+          <div id="adminUsersList"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MODAL CREAR CLASE -->
+    <div id="classModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:540px;">
+        <h3 style="margin-bottom: 20px;">Subir Nueva Clase de Discipulado</h3>
+        <form id="classForm">
+          <div class="form-group">
+            <label>Título de la Clase</label>
+            <input type="text" id="classTitulo" placeholder="Ej: Clase 3 - La Trinidad y el Espíritu Santo" required>
+          </div>
+          <div class="form-group">
+            <label>Nivel de Discipulado</label>
+            <input type="text" id="classNivel" value="Nivel 1: Cimientos de la Fe" required>
+          </div>
+          <div class="form-group">
+            <label>Enlace de Video en YouTube</label>
+            <input type="url" id="classYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+          </div>
+          <div class="form-group">
+            <label>Enlace del PPT / Documento Complementario</label>
+            <input type="url" id="classPptUrl" placeholder="https://drive.google.com/... o enlace PDF/PPT">
+          </div>
+          <div class="form-group">
+            <label>Descripción / Resumen de la Clase</label>
+            <textarea id="classDescripcion" rows="3" placeholder="Puntos clave abordados en la sesión..."></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeClassModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Publicar Clase</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL CREAR USUARIO -->
+    <div id="userModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:480px;">
+        <h3 style="margin-bottom: 20px;">Registrar Nuevo Usuario</h3>
+        <form id="userForm">
+          <div class="form-group">
+            <label>Nombre Completo</label>
+            <input type="text" id="userNombre" placeholder="Ej: Pedro Valenzuela" required>
+          </div>
+          <div class="form-group">
+            <label>Nombre de Usuario</label>
+            <input type="text" id="userUsername" placeholder="Ej: pedro1" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="userEmail" placeholder="pedro@ejemplo.com" required>
+          </div>
+          <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="userPassword" placeholder="••••••••" required>
+          </div>
+          <div class="form-group">
+            <label>Rol del Usuario</label>
+            <select id="userRole" required>
+              <option value="student">Estudiante</option>
+              <option value="paidagogo">Paidagogo (Profesor)</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nivel de Discipulado (Si es estudiante)</label>
+            <input type="text" id="userNivel" value="Nivel 1: Cimientos de la Fe">
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeUserModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-dark">Crear Usuario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    async function checkAuth() {
+      const res = await fetch('/api/me');
+      const data = await res.json();
+      if (data.authenticated && data.user.role === 'admin') {
+        showDashboard(data.user);
+      } else {
+        document.getElementById('loginView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'none';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.user.role === 'admin') {
+          showDashboard(data.user);
+        } else {
+          document.getElementById('loginError').textContent = data.error || 'Credenciales de administrador inválidas';
+          document.getElementById('loginError').style.display = 'block';
+        }
+      } catch (e) {
+        if (username === 'admin' && password === 'admin123') {
+          showDashboard({ id: 'u_admin_1', nombre: 'Pastor Christopher Rodríguez', role: 'admin' });
+        } else {
+          document.getElementById('loginError').textContent = 'Credenciales inválidas. Usa admin / admin123';
+          document.getElementById('loginError').style.display = 'block';
+        }
+      }
+    });
+
+    async function showDashboard(user) {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+      document.getElementById('userHeaderActions').style.display = 'flex';
+      document.getElementById('welcomeUserName').textContent = user.nombre;
+
+      loadOverview();
+    }
+
+    async function loadOverview() {
+      let data = { users: [], classes: [] };
+      try {
+        const res = await fetch('/api/admin/overview');
+        if (res.ok) data = await res.json();
+      } catch (e) {
+        data = {
+          users: [
+            { id: 'u_admin_1', nombre: 'Pastor Christopher Rodríguez', username: 'admin', email: 'admin@ifdp.cl', role: 'admin' },
+            { id: 'u_paidagogo_1', nombre: 'Paidagogo Juan Pérez', username: 'paidagogo1', email: 'juan@ifdp.cl', role: 'paidagogo' },
+            { id: 'u_student_1', nombre: 'María González', username: 'alumno1', email: 'maria@gmail.com', role: 'student' }
+          ],
+          classes: [
+            {
+              titulo: 'Clase 1: La Identidad del Hijo de Dios',
+              nivel: 'Nivel 1: Cimientos de la Fe',
+              descripcion: 'Fundamento del nuevo nacimiento y la adopción.',
+              youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+              pptUrl: 'https://example.com/ppt1.pdf'
+            }
+          ]
+        };
+      }
+
+      // Render Classes
+      document.getElementById('adminClassesList').innerHTML = data.classes.map(c => `
+        <div style="padding:14px; border-bottom:1px solid var(--border-light); margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${c.titulo}</strong>
+            <span style="font-size:0.75rem; background:var(--accent-orange-light); color:var(--accent-orange); font-weight:700; padding:2px 8px; border-radius:4px;">${c.nivel}</span>
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 8px 0;">${c.descripcion}</p>
+          <div style="font-size:0.8rem;">
+            🎥 <strong>YouTube:</strong> <a href="${c.youtubeUrl}" target="_blank">${c.youtubeUrl}</a><br>
+            📄 <strong>PPT:</strong> ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank">Ver Archivo PPT</a>` : 'Sin archivo adjunto'}
+          </div>
+        </div>
+      `).join('');
+
+      // Render Users
+      document.getElementById('adminUsersList').innerHTML = data.users.map(u => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border-light);">
+          <div>
+            <strong>${u.nombre}</strong> (@${u.username})<br>
+            <span style="font-size:0.8rem; color:var(--text-muted);">${u.email}</span>
+          </div>
+          <div>
+            <span class="badge-role role-${u.role}">${u.role}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openClassModal() { document.getElementById('classModal').style.display = 'flex'; }
+    function closeClassModal() { document.getElementById('classModal').style.display = 'none'; }
+    function openUserModal() { document.getElementById('userModal').style.display = 'flex'; }
+    function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
+
+    document.getElementById('classForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        titulo: document.getElementById('classTitulo').value,
+        nivel: document.getElementById('classNivel').value,
+        youtubeUrl: document.getElementById('classYoutubeUrl').value,
+        pptUrl: document.getElementById('classPptUrl').value,
+        descripcion: document.getElementById('classDescripcion').value
+      };
+      const res = await fetch('/api/admin/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) { closeClassModal(); loadOverview(); }
+    });
+
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        nombre: document.getElementById('userNombre').value,
+        username: document.getElementById('userUsername').value,
+        email: document.getElementById('userEmail').value,
+        password: document.getElementById('userPassword').value,
+        role: document.getElementById('userRole').value,
+        nivel: document.getElementById('userNivel').value
+      };
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) { closeUserModal(); loadOverview(); }
+    });
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.reload();
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>

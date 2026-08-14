@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Paidagogos | Discipulado IFDP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .portal-body { background-color: var(--bg-main); min-height: 100vh; }
+    .portal-header { background: #FFFFFF; border-bottom: 1px solid var(--border-light); padding: 16px 0; }
+    .auth-card { background: white; max-width: 420px; margin: 80px auto; padding: 40px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-light); }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border-light); font-size: 0.95rem; }
+    .table-container { background: white; border-radius: var(--radius-md); border: 1px solid var(--border-light); overflow: hidden; box-shadow: var(--shadow-sm); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 14px 20px; border-bottom: 1px solid var(--border-light); }
+    th { background: var(--bg-main); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); }
+  </style>
+</head>
+<body class="portal-body">
+
+  <header class="portal-header">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" class="logo-link">
+        <div class="logo-icon" style="background: linear-gradient(135deg, #0284C7, #0369A1);"><i class="ri-user-star-line"></i></div>
+        <div class="logo-text">
+          <span class="logo-title">PAIDAGOGOS IFDP</span>
+          <span class="logo-subtitle">Portal de Profesores</span>
+        </div>
+      </a>
+      <div id="userHeaderActions" style="display: none;">
+        <span id="welcomeUserName" style="font-weight: 600; margin-right: 15px;"></span>
+        <button onclick="logout()" class="btn btn-outline" style="padding: 8px 18px; font-size: 0.85rem;"><i class="ri-logout-box-r-line"></i> Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 40px 0;">
+    
+    <!-- LOGIN FORM -->
+    <div id="loginView" class="auth-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="logo-icon" style="margin: 0 auto 15px auto; background: #0284C7;"><i class="ri-shield-user-line"></i></div>
+        <h2>Acceso Paidagogos</h2>
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">Portal para carga y edición de calificaciones.</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Usuario o Email</label>
+          <input type="text" id="loginUsername" placeholder="Ej: paidagogo1" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <div id="loginError" style="color: #DC2626; font-size: 0.85rem; margin-bottom: 15px; display: none;"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; background: #0284C7;">Ingresar Paidagogos</button>
+      </form>
+      <div style="margin-top: 20px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+        Usuario de prueba: <strong>paidagogo1</strong> / Clave: <strong>profe123</strong>
+      </div>
+    </div>
+
+    <!-- DASHBOARD PAIDAGOGO -->
+    <div id="dashboardView" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+          <span class="section-badge" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;"><i class="ri-user-star-line"></i> Gestión Académica</span>
+          <h2>Planilla de Estudiantes & Calificaciones</h2>
+        </div>
+        <button onclick="openGradeModal()" class="btn btn-primary" style="background: #0284C7;"><i class="ri-add-line"></i> Ingresar Nueva Calificación</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Estudiante</th>
+              <th>Nivel</th>
+              <th>Calificaciones Registradas</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MODAL INGRESAR NOTA -->
+    <div id="gradeModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:480px;">
+        <h3 style="margin-bottom: 20px;">Ingresar Calificación</h3>
+        <form id="gradeForm">
+          <div class="form-group">
+            <label>Seleccionar Estudiante</label>
+            <select id="gradeStudentSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>Unidad / Módulo</label>
+            <input type="text" id="gradeUnidad" placeholder="Ej: Módulo 1 - Fundamentos" required>
+          </div>
+          <div class="form-group">
+            <label>Nota (1.0 a 7.0)</label>
+            <input type="number" step="0.1" min="1.0" max="7.0" id="gradeNota" placeholder="Ej: 6.5" required>
+          </div>
+          <div class="form-group">
+            <label>Asistencia (%)</label>
+            <input type="text" id="gradeAsistencia" placeholder="Ej: 90%" value="100%">
+          </div>
+          <div class="form-group">
+            <label>Observaciones</label>
+            <textarea id="gradeObservaciones" rows="2" placeholder="Desempeño y comentarios..."></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeGradeModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Nota</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let currentStudents = [];
+
+    async function checkAuth() {
+      const res = await fetch('/api/me');
+      const data = await res.json();
+      if (data.authenticated && (data.user.role === 'paidagogo' || data.user.role === 'admin')) {
+        showDashboard(data.user);
+      } else {
+        document.getElementById('loginView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'none';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showDashboard(data.user);
+        } else {
+          document.getElementById('loginError').textContent = data.error || 'Error al iniciar sesión';
+          document.getElementById('loginError').style.display = 'block';
+        }
+      } catch (e) {
+        if (username === 'paidagogo1' && password === 'profe123') {
+          showDashboard({ id: 'u_paidagogo_1', nombre: 'Paidagogo Juan Pérez', role: 'paidagogo' });
+        } else {
+          document.getElementById('loginError').textContent = 'Credenciales inválidas. Usa paidagogo1 / profe123';
+          document.getElementById('loginError').style.display = 'block';
+        }
+      }
+    });
+
+    async function showDashboard(user) {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+      document.getElementById('userHeaderActions').style.display = 'flex';
+      document.getElementById('welcomeUserName').textContent = user.nombre;
+
+      loadStudents();
+    }
+
+    async function loadStudents() {
+      try {
+        const res = await fetch('/api/paidagogo/students');
+        if (res.ok) currentStudents = await res.json();
+      } catch (e) {
+        currentStudents = [
+          {
+            id: 'u_student_1',
+            nombre: 'María González',
+            email: 'maria@gmail.com',
+            nivel: 'Nivel 1: Cimientos de la Fe',
+            grades: [
+              { unidad: 'Módulo 1 - Fundamentos', nota: 6.8 },
+              { unidad: 'Módulo 2 - Oración', nota: 7.0 }
+            ]
+          },
+          {
+            id: 'u_student_2',
+            nombre: 'Carlos Benítez',
+            email: 'carlos@gmail.com',
+            nivel: 'Nivel 1: Cimientos de la Fe',
+            grades: [
+              { unidad: 'Módulo 1 - Fundamentos', nota: 6.2 }
+            ]
+          }
+        ];
+      }
+
+      const tbody = document.getElementById('studentsTableBody');
+      const select = document.getElementById('gradeStudentSelect');
+
+      select.innerHTML = currentStudents.map(s => `<option value="${s.id}">${s.nombre} (${s.nivel || 'Sin nivel'})</option>`).join('');
+
+      tbody.innerHTML = currentStudents.map(s => `
+        <tr>
+          <td>
+            <strong>${s.nombre}</strong><br>
+            <span style="font-size:0.8rem; color:var(--text-muted);">${s.email}</span>
+          </td>
+          <td><span style="font-size:0.85rem; font-weight:600;">${s.nivel || 'Nivel 1'}</span></td>
+          <td>
+            ${s.grades.length ? s.grades.map(g => `<span style="display:inline-block; background:#E0F2FE; color:#0284C7; padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; margin:2px;">${g.unidad}: ${g.nota}</span>`).join(' ') : '<em style="color:var(--text-muted); font-size:0.85rem;">Sin notas</em>'}
+          </td>
+          <td>
+            <button onclick="openGradeModal('${s.id}')" class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem;">+ Agregar Nota</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openGradeModal(studentId = null) {
+      if (studentId) document.getElementById('gradeStudentSelect').value = studentId;
+      document.getElementById('gradeModal').style.display = 'flex';
+    }
+
+    function closeGradeModal() {
+      document.getElementById('gradeModal').style.display = 'none';
+    }
+
+    document.getElementById('gradeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        studentId: document.getElementById('gradeStudentSelect').value,
+        unidad: document.getElementById('gradeUnidad').value,
+        nota: document.getElementById('gradeNota').value,
+        asistencia: document.getElementById('gradeAsistencia').value,
+        observaciones: document.getElementById('gradeObservaciones').value
+      };
+
+      const res = await fetch('/api/paidagogo/grades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        closeGradeModal();
+        loadStudents();
+      }
+    });
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.reload();
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>

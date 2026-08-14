@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iglesia Familias de Paz | San Felipe, Chile</title>
+  <meta name="description" content="Iglesia Familias de Paz en San Felipe, Chile. Conoce nuestros cultos, discipulados, reuniones de oración, ministerios y cómo visitarnos. Bajo la cobertura de CCINT.">
+  
+  <!-- SEO Local Business Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Church",
+    "name": "Iglesia Familias de Paz",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Las Heras 460",
+      "addressLocality": "San Felipe",
+      "addressRegion": "Valparaíso",
+      "addressCountry": "Chile"
+    },
+    "founder": [
+      {
+        "@type": "Person",
+        "name": "Christopher Rodríguez"
+      },
+      {
+        "@type": "Person",
+        "name": "Jocelyn Valdenegro"
+      }
+    ],
+    "parentOrganization": {
+      "@type": "Organization",
+      "name": "CCINT — Centro Cristiano Internacional"
+    }
+  }
+  </script>
+
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Remix Icon CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       HEADER & NAVIGATION
+       ========================================================================== -->
+  <header class="header" id="mainHeader">
+    <div class="container nav-container">
+      <a href="#inicio" class="logo-link">
+        <div class="logo-icon">
+          <i class="ri-heart-pulse-fill"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">FAMILIAS DE PAZ</span>
+          <span class="logo-subtitle">IGLESIA CRISTIANA</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-menu" id="navMenu">
+          <li><a href="#inicio" class="nav-link active">Inicio</a></li>
+          <li><a href="#nuestra-iglesia" class="nav-link">Nuestra Iglesia</a></li>
+          <li><a href="#reuniones" class="nav-link">Reuniones</a></li>
+          <li class="nav-dropdown">
+            <a href="discipulado.html" class="nav-link">Discipulado <i class="ri-arrow-down-s-line"></i></a>
+            <ul class="dropdown-menu">
+              <li><a href="discipulado.html"><i class="ri-user-smile-line"></i> Portal Estudiantes</a></li>
+              <li><a href="paidagogos.html"><i class="ri-user-star-line"></i> Portal Paidagogos</a></li>
+            </ul>
+          </li>
+          <li><a href="#ministerios" class="nav-link">Ministerios</a></li>
+          <li><a href="#cuna-profetica" class="nav-link">Cuna Profética</a></li>
+          <li><a href="#predicaciones" class="nav-link">Predicaciones</a></li>
+          <li><a href="#ubicacion" class="nav-link">Ubicación</a></li>
+          <li><a href="#contacto" class="nav-link">Contacto</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#ubicacion" class="btn btn-primary">
+          <i class="ri-map-pin-line"></i> Visítanos
+        </a>
+      </div>
+
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Abrir menú de navegación">
+        <i class="ri-menu-line"></i>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==========================================================================
+         HERO SECTION
+         ========================================================================== -->
+    <section class="hero-section" id="inicio">
+      <div class="container">
+        <div class="hero-card">
+          <img src="images/1.jpeg" alt="Iglesia Familias de Paz Adoración" class="hero-bg" style="object-position: center 30%;">
+          <div class="hero-overlay"></div>
+          
+          <div class="hero-content">
+            <div class="hero-badge">
+              <i class="ri-sparkles-line"></i> Bienvenidos a Casa
+            </div>
+            <h1 class="hero-title">IGLESIA FAMILIAS DE PAZ</h1>
+            <p class="hero-subtitle">
+              "Un lugar para encontrarte con Dios, crecer en familia y vivir tu propósito."
+            </p>
+            <div class="hero-buttons">
+              <a href="#ubicacion" class="btn btn-primary">
+                <i class="ri-user-follow-line"></i> Quiero visitarnos
+              </a>
+              <a href="#" data-link="youtube" target="_blank" rel="noopener" class="btn btn-secondary">
+                <i class="ri-youtube-fill"></i> Ver en YouTube
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-footer-bar">
+          <div class="hero-info-item">
+            <i class="ri-map-pin-fill"></i>
+            <span>Las Heras 460, San Felipe, Chile</span>
+          </div>
+          <div class="hero-info-item">
+            <i class="ri-heart-fill"></i>
+            <span>Todos son bienvenidos</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         BARRA DE PRÓXIMAS REUNIONES
+         ========================================================================== -->
+    <section class="schedule-section">
+      <div class="container">
+        <div class="schedule-grid">
+          
+          <!-- Card 1 -->
+          <div class="schedule-card">
+            <div class="schedule-card-bg">
+              <img src="images/2.jpeg" alt="Culto General">
+              <div class="schedule-card-bg-overlay"></div>
+            </div>
+            <div class="schedule-card-inner">
+              <span class="schedule-tag tag-presencial">Presencial</span>
+              <h3 class="schedule-title">Culto General</h3>
+              <p class="schedule-time">Domingos · 10:00 AM</p>
+              <a href="#ubicacion" class="btn btn-outline schedule-btn">
+                <i class="ri-map-pin-2-line"></i> Cómo Llegar
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="schedule-card">
+            <div class="schedule-card-bg">
+              <img src="images/3.jpeg" alt="Discipulados">
+              <div class="schedule-card-bg-overlay"></div>
+            </div>
+            <div class="schedule-card-inner">
+              <span class="schedule-tag tag-presencial">Presencial</span>
+              <h3 class="schedule-title">Discipulados</h3>
+              <p class="schedule-time">Viernes · 20:00 PM</p>
+              <a href="#contacto" class="btn btn-outline schedule-btn">
+                <i class="ri-information-line"></i> Más Información
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="schedule-card">
+            <div class="schedule-card-bg">
+              <img src="images/8.jpeg" alt="Oración">
+              <div class="schedule-card-bg-overlay"></div>
+            </div>
+            <div class="schedule-card-inner">
+              <span class="schedule-tag tag-online">Vía Zoom</span>
+              <h3 class="schedule-title">Oración Online</h3>
+              <p class="schedule-time">Miércoles · 20:30 PM</p>
+              <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
+                <i class="ri-vidicon-line"></i> Unirme a Zoom
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="schedule-card">
+            <div class="schedule-card-bg">
+              <img src="images/5.jpeg" alt="Orden de Batalla">
+              <div class="schedule-card-bg-overlay"></div>
+            </div>
+            <div class="schedule-card-inner">
+              <span class="schedule-tag tag-online">Oración Online</span>
+              <h3 class="schedule-title">Orden de Batalla</h3>
+              <p class="schedule-time">Viernes · 06:00 AM</p>
+              <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
+                <i class="ri-notification-line"></i> Unirme
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         NUESTRA IGLESIA (PRESENTACIÓN INSTITUCIONAL)
+         ========================================================================== -->
+    <section class="about-section" id="nuestra-iglesia">
+      <div class="container">
+        <div class="about-grid">
+          
+          <div class="about-image-wrapper">
+            <img src="images/9.jpg" alt="Pastores Christopher Rodríguez y Jocelyn Valdenegro">
+            <div class="about-badge-overlay">
+              <div class="about-badge-title">Cobertura Espiritual</div>
+              <div class="about-badge-desc">CCINT — Centro Cristiano Internacional</div>
+            </div>
+          </div>
+
+          <div class="about-content">
+            <div class="section-badge">
+              <i class="ri-building-4-line"></i> Nuestra Iglesia
+            </div>
+            <h2>Somos Familias de Paz</h2>
+            <p class="about-lead">
+              Somos una iglesia cristiana que busca vivir el evangelio en comunidad, crecer en la presencia de Dios y formar familias que puedan impactar su entorno con amor, fe y esperanza.
+            </p>
+            <p>
+              Creemos firmemente en el poder transformador del mensaje de Jesús y en construir un ambiente donde cada persona encuentre un refugio, desarrolle sus dones y sirva con propósito.
+            </p>
+
+            <div class="pastors-card">
+              <img src="images/9.jpg" alt="Pastores" class="pastors-avatar">
+              <div class="pastors-info">
+                <h4>Christopher Rodríguez & Jocelyn Valdenegro</h4>
+                <p>Pastores Principales</p>
+              </div>
+            </div>
+
+            <div class="cobertura-tag">
+              <i class="ri-shield-check-line text-orange"></i>
+              Bajo la cobertura espiritual de <strong>CCINT (Centro Cristiano Internacional)</strong>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         SECCIÓN "HAY UN LUGAR PARA TI" (MINISTERIOS)
+         ========================================================================== -->
+    <section class="areas-section" id="ministerios" style="background-image: url('images/6.jpeg'); background-size: cover; background-position: center; background-attachment: fixed; position: relative;">
+      <div class="areas-bg-overlay"></div>
+      <div class="container" style="position: relative; z-index: 2;">
+        <div class="section-header">
+          <div class="section-badge">
+            <i class="ri-group-line"></i> Ministerios & Equipos
+          </div>
+          <h2>Hay un lugar para ti</h2>
+          <p>Somos una familia que busca seguir a Jesús, crecer juntos y servir con propósito. Descubre las distintas áreas donde puedes involucrarte.</p>
+        </div>
+
+        <div class="areas-grid">
+          
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-bear-smile-line"></i></div>
+              <h3 class="area-title">Cuna Profética</h3>
+              <p class="area-desc">Espacio dinámico y seguro destinado a la enseñanza bíblica y espiritual para nuestros niños de hasta 11 años.</p>
+            </div>
+          </div>
+
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-music-2-line"></i></div>
+              <h3 class="area-title">Adoración</h3>
+              <p class="area-desc">Equipo de músicos y voces dedicados a guiar a la congregación a través de la alabanza y la adoración a Dios.</p>
+            </div>
+          </div>
+
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-footprint-line"></i></div>
+              <h3 class="area-title">Danza</h3>
+              <p class="area-desc">Expresión artística y profunda de adoración que acompaña nuestros cultos y tiempos de alabanza.</p>
+            </div>
+          </div>
+
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-camera-lens-line"></i></div>
+              <h3 class="area-title">Multimedia</h3>
+              <p class="area-desc">Encargados del sonido, proyección, iluminación y transmisiones para llevar el mensaje con la más alta excelencia.</p>
+            </div>
+          </div>
+
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-shield-user-line"></i></div>
+              <h3 class="area-title">Servicio de Vigilancia</h3>
+              <p class="area-desc">Servicio integral de protocolo, bienvenida y resguardo para la seguridad y comodidad de todas las familias.</p>
+            </div>
+          </div>
+
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-route-line"></i></div>
+              <h3 class="area-title">Logística</h3>
+              <p class="area-desc">Coordinación operativa y técnica detrás de cada reunión y evento para garantizar un ambiente óptimo.</p>
+            </div>
+          </div>
+
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-sparkles-2-line"></i></div>
+              <h3 class="area-title">Servicio de Aseo</h3>
+              <p class="area-desc">Servicio con amor que mantiene la casa de Dios impecable, acogedora y digna para recibir a la comunidad.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         SECCIÓN ESPECIAL: CUNA PROFÉTICA
+         ========================================================================== -->
+    <section class="cuna-section" id="cuna-profetica">
+      <div class="container">
+        <div class="cuna-card">
+          <div class="cuna-content">
+            <div class="cuna-age-tag">
+              <i class="ri-emotion-happy-line"></i> Niños hasta 11 años
+            </div>
+            <h2 class="cuna-title">Cuna Profética</h2>
+            <p class="cuna-subtitle">
+              "Un lugar para que nuestros niños conozcan, amen y crezcan en Dios."
+            </p>
+            
+            <div class="cuna-features">
+              <div class="cuna-feature-item">
+                <i class="ri-checkbox-circle-fill"></i> Clases diseñadas según la edad de tus hijos.
+              </div>
+              <div class="cuna-feature-item">
+                <i class="ri-checkbox-circle-fill"></i> Maestros comprometidos, capacitados y con vocación.
+              </div>
+              <div class="cuna-feature-item">
+                <i class="ri-checkbox-circle-fill"></i> Ambiente seguro, alegre y lleno de la palabra de Dios.
+              </div>
+            </div>
+
+            <a href="#contacto" class="btn btn-primary">
+              <i class="ri-heart-3-line"></i> Conoce Cuna Profética
+            </a>
+          </div>
+
+          <div class="cuna-image">
+            <img src="images/10.jpg" alt="Cuna Profética - Niños aprendiendo de Dios">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         SECCIÓN REUNIONES DETALLADA
+         ========================================================================== -->
+    <section class="reuniones-section" id="reuniones" style="background-image: url('images/7.jpeg'); background-size: cover; background-position: center; background-attachment: fixed; position: relative;">
+      <div class="reuniones-bg-overlay"></div>
+      <div class="container" style="position: relative; z-index: 2;">
+        <div class="section-header">
+          <div class="section-badge">
+            <i class="ri-calendar-event-line"></i> Horarios Semanales
+          </div>
+          <h2>Nos reunimos durante la semana</h2>
+          <p>Te invitamos a ser parte de nuestras actividades presenciales y virtuales.</p>
+        </div>
+
+        <div class="reuniones-grid">
+          
+          <!-- Domingo -->
+          <div class="reunion-card">
+            <div>
+              <span class="reunion-day">Domingo</span>
+              <h3 class="reunion-name">Culto General</h3>
+              <div class="reunion-details">
+                <div class="reunion-detail-item">
+                  <i class="ri-time-line"></i> 10:00 AM
+                </div>
+                <div class="reunion-detail-item">
+                  <i class="ri-map-pin-line"></i> Presencial · Las Heras 460
+                </div>
+              </div>
+            </div>
+            <a href="#ubicacion" class="btn btn-primary">
+              <i class="ri-navigation-line"></i> Cómo llegar
+            </a>
+          </div>
+
+          <!-- Miércoles -->
+          <div class="reunion-card">
+            <div>
+              <span class="reunion-day">Miércoles</span>
+              <h3 class="reunion-name">Oración Online</h3>
+              <div class="reunion-details">
+                <div class="reunion-detail-item">
+                  <i class="ri-time-line"></i> 20:30 PM
+                </div>
+                <div class="reunion-detail-item">
+                  <i class="ri-video-line"></i> Vía Zoom
+                </div>
+              </div>
+            </div>
+            <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-primary">
+              <i class="ri-vidicon-fill"></i> Unirme a Zoom
+            </a>
+          </div>
+
+          <!-- Viernes Discipulados -->
+          <div class="reunion-card">
+            <div>
+              <span class="reunion-day">Viernes</span>
+              <h3 class="reunion-name">Discipulados</h3>
+              <div class="reunion-details">
+                <div class="reunion-detail-item">
+                  <i class="ri-time-line"></i> 20:00 PM
+                </div>
+                <div class="reunion-detail-item">
+                  <i class="ri-building-line"></i> Presencial
+                </div>
+              </div>
+            </div>
+            <a href="#contacto" class="btn btn-outline">
+              <i class="ri-information-line"></i> Más información
+            </a>
+          </div>
+
+          <!-- Viernes Orden de Batalla -->
+          <div class="reunion-card">
+            <div>
+              <span class="reunion-day">Viernes</span>
+              <h3 class="reunion-name">Orden de Batalla</h3>
+              <div class="reunion-details">
+                <div class="reunion-detail-item">
+                  <i class="ri-time-line"></i> 06:00 AM
+                </div>
+                <div class="reunion-detail-item">
+                  <i class="ri-global-line"></i> Oración Online
+                </div>
+              </div>
+            </div>
+            <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline">
+              <i class="ri-add-circle-line"></i> Unirme
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         UBICACIÓN & SERVICIOS PARA VISITANTES
+         ========================================================================== -->
+    <section class="location-section" id="ubicacion" style="background-image: url('images/11.jpg'); background-size: cover; background-position: center; background-attachment: fixed; position: relative;">
+      <div class="location-bg-overlay"></div>
+      <div class="container" style="position: relative; z-index: 2;">
+        <div class="location-grid">
+          
+          <div class="location-info">
+            <div class="section-badge">
+              <i class="ri-map-pin-2-line"></i> Tu Primera Visita
+            </div>
+            <h2>Te esperamos en casa</h2>
+            <p>Queremos que tu experiencia al visitarnos sea cómoda, clara y acogedora desde el primer momento.</p>
+
+            <div class="location-address-box">
+              <div class="address-icon">
+                <i class="ri-map-pin-fill"></i>
+              </div>
+              <div class="address-text">
+                <h4>Dirección</h4>
+                <p>Las Heras 460, San Felipe, Región de Valparaíso, Chile.</p>
+              </div>
+            </div>
+
+            <h4 class="services-title">Todo preparado para recibirte:</h4>
+            
+            <div class="services-grid">
+              <div class="service-item">
+                <i class="ri-car-fill"></i> Estacionamiento disponible
+              </div>
+              <div class="service-item">
+                <i class="ri-rest-room-line"></i> Baños acondicionados
+              </div>
+              <div class="service-item">
+                <i class="ri-building-2-line"></i> Oficinas de atención
+              </div>
+              <div class="service-item">
+                <i class="ri-parent-line"></i> Cuna Profética para niños
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+              <a href="#" data-link="maps" target="_blank" rel="noopener" class="btn btn-primary">
+                <i class="ri-direction-line"></i> Cómo llegar en Google Maps
+              </a>
+              <a href="#contacto" class="btn btn-outline">
+                <i class="ri-question-answer-line"></i> Contactarnos
+              </a>
+            </div>
+          </div>
+
+          <div class="map-container">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3345.955403079943!2d-70.7258!3d-32.7508!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDQ1JzAyLjkiUyA3MMKwNDMnMzIuOSJX!5e0!3m2!1ses!2scl!4v1600000000000!5m2!1ses!2scl" 
+              allowfullscreen="" 
+              loading="lazy" 
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Mapa de ubicación Iglesia Familias de Paz en San Felipe">
+            </iframe>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         PREDICACIONES & YOUTUBE
+         ========================================================================== -->
+    <section class="media-section" id="predicaciones">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-badge">
+            <i class="ri-video-line"></i> Mensajes & Enseñanzas
+          </div>
+          <h2>Predicaciones</h2>
+          <p>Mantente conectado con la palabra de Dios desde donde estés.</p>
+        </div>
+
+        <div class="sermon-card">
+          <div class="sermon-thumbnail-wrapper">
+            <div class="youtube-embed-wrapper">
+              <iframe 
+                src="https://www.youtube.com/embed/ZE7zNQ5f6QE?start=341&rel=0&modestbranding=1" 
+                title="Última Predicación - Iglesia Familias de Paz"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+              </iframe>
+            </div>
+          </div>
+
+          <div class="sermon-info">
+            <span class="sermon-tag">Última Predicación</span>
+            <h3 class="sermon-title">Viviendo en la Paz y el Propósito de Dios</h3>
+            <div class="sermon-meta">
+              <span><i class="ri-user-3-line"></i> Pastor Christopher Rodríguez</span>
+              <span><i class="ri-youtube-fill"></i> YouTube</span>
+            </div>
+            <p style="margin-bottom: 28px;">
+              Descubre cómo la presencia de Dios transforma cada ámbito de nuestras familias y nos capacita para caminar con fe en medio de cualquier circunstancia.
+            </p>
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+              <a href="https://www.youtube.com/watch?v=ZE7zNQ5f6QE&t=341s" target="_blank" rel="noopener" class="btn btn-primary">
+                <i class="ri-youtube-fill"></i> Ver en YouTube
+              </a>
+              <a href="https://www.youtube.com/@iglesiafamiliasdepaz" target="_blank" rel="noopener" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);">
+                Ver más predicaciones
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         INSTAGRAM & COMUNIDAD
+         ========================================================================== -->
+    <section class="social-section">
+      <div class="container">
+        <div class="section-badge">
+          <i class="ri-instagram-line"></i> Redes Sociales
+        </div>
+        <h2>Síguenos en Instagram</h2>
+        <p>Conoce lo que estamos viviendo como familia durante la semana.</p>
+
+        <div class="insta-grid">
+          <a href="https://www.instagram.com/iglesiafamiliasdepaz/" target="_blank" rel="noopener" class="insta-item">
+            <img src="images/2.jpeg" alt="Iglesia Familias de Paz Instagram - Culto">
+            <div class="insta-overlay"><i class="ri-instagram-line"></i></div>
+          </a>
+          <a href="https://www.instagram.com/iglesiafamiliasdepaz/" target="_blank" rel="noopener" class="insta-item">
+            <img src="images/3.jpeg" alt="Iglesia Familias de Paz Instagram - Discipulado">
+            <div class="insta-overlay"><i class="ri-instagram-line"></i></div>
+          </a>
+          <a href="https://www.instagram.com/iglesiafamiliasdepaz/" target="_blank" rel="noopener" class="insta-item">
+            <img src="images/4.jpeg" alt="Iglesia Familias de Paz Instagram - Oración">
+            <div class="insta-overlay"><i class="ri-instagram-line"></i></div>
+          </a>
+          <a href="https://www.instagram.com/iglesiafamiliasdepaz/" target="_blank" rel="noopener" class="insta-item">
+            <img src="images/1.jpeg" alt="Iglesia Familias de Paz Instagram - Comunidad">
+            <div class="insta-overlay"><i class="ri-instagram-line"></i></div>
+          </a>
+        </div>
+
+        <a href="https://www.instagram.com/iglesiafamiliasdepaz/" target="_blank" rel="noopener" class="btn btn-outline">
+          <i class="ri-instagram-line"></i> @iglesiafamiliasdepaz
+        </a>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         SECCIÓN DE CONTACTO DIRECTO
+         ========================================================================== -->
+    <section class="contact-section" id="contacto">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-badge">
+            <i class="ri-customer-service-2-line"></i> Atención & Consultas
+          </div>
+          <h2>¿Quieres hablar con nosotros?</h2>
+          <p>Estamos listos para responder tus preguntas, orar por ti y recibirte con los brazos abiertos.</p>
+        </div>
+
+        <div class="contact-grid">
+          
+          <div class="contact-card">
+            <div class="contact-card-icon icon-wsp">
+              <i class="ri-whatsapp-line"></i>
+            </div>
+            <h3 class="contact-card-title">WhatsApp</h3>
+            <p class="contact-card-desc">Escríbenos directamente para atención personalizada.</p>
+            <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-whatsapp" style="width: 100%;">
+              Escríbenos por WhatsApp
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-card-icon icon-phone">
+              <i class="ri-phone-line"></i>
+            </div>
+            <h3 class="contact-card-title">Llamada Directa</h3>
+            <p class="contact-card-desc">Comunícate con nuestras oficinas pastorales.</p>
+            <a href="#" data-link="phone" class="btn btn-dark" style="width: 100%;">
+              Llámanos
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-card-icon icon-insta">
+              <i class="ri-instagram-line"></i>
+            </div>
+            <h3 class="contact-card-title">Instagram</h3>
+            <p class="contact-card-desc">Envíanos un mensaje directo o sigue las novedades.</p>
+            <a href="#" data-link="instagram" target="_blank" rel="noopener" class="btn btn-outline" style="width: 100%;">
+              Ver Instagram
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-card-icon icon-yt">
+              <i class="ri-youtube-line"></i>
+            </div>
+            <h3 class="contact-card-title">YouTube</h3>
+            <p class="contact-card-desc">Suscríbete a nuestro canal oficial para nuevos videos.</p>
+            <a href="#" data-link="youtube" target="_blank" rel="noopener" class="btn btn-outline" style="width: 100%;">
+              Visitar YouTube
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         FINAL CTA BANNER
+         ========================================================================== -->
+    <section class="final-cta-section">
+      <div class="container">
+        <div class="final-cta-card">
+          <img src="images/8.jpeg" alt="Comunidad Familias de Paz" class="final-cta-bg">
+          <div class="final-cta-overlay"></div>
+          
+          <div class="final-cta-content">
+            <h2>Hay un lugar para ti en Familias de Paz</h2>
+            <p>Ven, conócenos y sé parte de lo que Dios está haciendo en San Felipe.</p>
+            <div class="final-cta-buttons">
+              <a href="#ubicacion" class="btn btn-primary">
+                <i class="ri-user-heart-line"></i> Quiero visitarlos
+              </a>
+              <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-whatsapp">
+                <i class="ri-whatsapp-line"></i> Contactar por WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        
+        <div class="footer-brand">
+          <div class="logo-link">
+            <div class="logo-icon">
+              <i class="ri-heart-pulse-fill"></i>
+            </div>
+            <div class="logo-text">
+              <span class="logo-title">FAMILIAS DE PAZ</span>
+              <span class="logo-subtitle">IGLESIA CRISTIANA</span>
+            </div>
+          </div>
+          <p>
+            Una familia donde puedes encontrar un lugar, crecer en tu fe y servir a Dios.
+          </p>
+          <p>
+            📍 <strong>Las Heras 460, San Felipe, Chile</strong>
+          </p>
+        </div>
+
+        <div>
+          <h4>Enlaces Rápidos</h4>
+          <ul class="footer-links">
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#nuestra-iglesia">Nuestra Iglesia</a></li>
+            <li><a href="#reuniones">Reuniones</a></li>
+            <li><a href="#ministerios">Ministerios</a></li>
+            <li><a href="#cuna-profetica">Cuna Profética</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Horarios Resumidos</h4>
+          <div class="footer-hours-list">
+            <div class="footer-hour-item">
+              <strong>Domingo · 10:00 AM</strong>
+              <span>Culto General (Presencial)</span>
+            </div>
+            <div class="footer-hour-item">
+              <strong>Miércoles · 20:30 PM</strong>
+              <span>Oración Online (Zoom)</span>
+            </div>
+            <div class="footer-hour-item">
+              <strong>Viernes · 06:00 AM</strong>
+              <span>Orden de Batalla (Online)</span>
+            </div>
+            <div class="footer-hour-item">
+              <strong>Viernes · 20:00 PM</strong>
+              <span>Discipulados (Presencial)</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4>Redes & Contacto</h4>
+          <div class="footer-social-links" style="margin-bottom: 20px;">
+            <a href="#" data-link="instagram" target="_blank" rel="noopener" class="social-icon-btn" aria-label="Instagram">
+              <i class="ri-instagram-line"></i>
+            </a>
+            <a href="#" data-link="youtube" target="_blank" rel="noopener" class="social-icon-btn" aria-label="YouTube">
+              <i class="ri-youtube-line"></i>
+            </a>
+            <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="social-icon-btn" aria-label="WhatsApp">
+              <i class="ri-whatsapp-line"></i>
+            </a>
+          </div>
+          <p style="font-size: 0.85rem;">
+            Pastores:<br>
+            <strong>Christopher Rodríguez & Jocelyn Valdenegro</strong>
+          </p>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 Iglesia Familias de Paz. Todos los derechos reservados.
+        </div>
+        <div class="footer-cobertura">
+          Bajo la cobertura espiritual de <strong>CCINT — Centro Cristiano Internacional</strong>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="floating-wsp" aria-label="Hablar por WhatsApp">
+    <i class="ri-whatsapp-line"></i>
+    <span>Escríbenos</span>
+  </a>
+
+  <!-- JavaScript File -->
+  <script src="main.js"></script>
+</body>
+</html>

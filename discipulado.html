@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Discipulado | Iglesia Familias de Paz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .portal-body { background-color: var(--bg-main); min-height: 100vh; display: flex; flex-direction: column; }
+    .portal-header { background: #FFFFFF; border-bottom: 1px solid var(--border-light); padding: 16px 0; }
+    .auth-card { background: white; max-width: 420px; margin: 80px auto; padding: 40px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-light); }
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; }
+    .form-group input { width: 100%; padding: 12px 16px; border-radius: var(--radius-sm); border: 1.5px solid var(--border-light); font-size: 1rem; }
+    .form-group input:focus { border-color: var(--accent-orange); outline: none; }
+    .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px; }
+    .class-card { background: white; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 24px; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); }
+    .video-container { position: relative; padding-bottom: 56.25%; height: 0; }
+    .video-container iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
+    .class-content { padding: 24px; }
+    .grade-badge { font-size: 1.5rem; font-weight: 800; color: var(--accent-orange); }
+  </style>
+</head>
+<body class="portal-body">
+
+  <header class="portal-header">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" class="logo-link">
+        <div class="logo-icon"><i class="ri-book-open-line"></i></div>
+        <div class="logo-text">
+          <span class="logo-title">DISCIPULADO IFDP</span>
+          <span class="logo-subtitle">Portal del Estudiante</span>
+        </div>
+      </a>
+      <div id="userHeaderActions" style="display: none;">
+        <span id="welcomeUserName" style="font-weight: 600; margin-right: 15px;"></span>
+        <button onclick="logout()" class="btn btn-outline" style="padding: 8px 18px; font-size: 0.85rem;"><i class="ri-logout-box-r-line"></i> Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="flex: 1; padding: 40px 0;">
+    
+    <!-- LOGIN FORM -->
+    <div id="loginView" class="auth-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="logo-icon" style="margin: 0 auto 15px auto;"><i class="ri-user-shared-line"></i></div>
+        <h2>Acceso Estudiantes</h2>
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">Ingresa con tus credenciales de discipulado.</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Usuario o Email</label>
+          <input type="text" id="loginUsername" placeholder="Ej: alumno1" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <div id="loginError" style="color: #DC2626; font-size: 0.85rem; margin-bottom: 15px; display: none;"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar al Portal</button>
+      </form>
+      <div style="margin-top: 20px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+        ¿Credenciales de prueba? Usuario: <strong>alumno1</strong> / Clave: <strong>estudiante123</strong>
+      </div>
+    </div>
+
+    <!-- DASHBOARD ESTUDIANTE -->
+    <div id="dashboardView" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+          <span class="section-badge"><i class="ri-graduation-cap-line"></i> Estudiante Activo</span>
+          <h1 id="studentNameTitle">Bienvenido</h1>
+          <p id="studentNivelSubtitle">Nivel 1: Cimientos de la Fe</p>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Columna Izquierda: Clases Grabadas & Materiales -->
+        <div>
+          <h3 style="margin-bottom: 20px;"><i class="ri-video-line text-orange"></i> Clases Grabadas & Presentaciones PPT</h3>
+          <div id="classesList"></div>
+        </div>
+
+        <!-- Columna Derecha: Calificaciones & Evolución -->
+        <div>
+          <h3 style="margin-bottom: 20px;"><i class="ri-file-chart-line text-orange"></i> Mis Notas & Evolución</h3>
+          <div style="background: white; border-radius: var(--radius-md); padding: 24px; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
+            <div id="gradesContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    async function checkAuth() {
+      const res = await fetch('/api/me');
+      const data = await res.json();
+      if (data.authenticated && (data.user.role === 'student' || data.user.role === 'admin')) {
+        showDashboard(data.user);
+      } else {
+        document.getElementById('loginView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'none';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showDashboard(data.user);
+        } else {
+          errorDiv.textContent = data.error || 'Error al iniciar sesión';
+          errorDiv.style.display = 'block';
+        }
+      } catch (err) {
+        // Modo local autónomo (sin servidor node corriendo)
+        if ((username === 'alumno1' || username === 'estudiante') && (password === 'estudiante123' || password === '123456')) {
+          const mockUser = {
+            id: 'u_student_1',
+            nombre: 'María González (Estudiante Demo)',
+            role: 'student',
+            nivel: 'Nivel 1: Cimientos de la Fe'
+          };
+          showDashboard(mockUser);
+        } else {
+          errorDiv.textContent = 'Credenciales locales inválidas. Usa alumno1 / estudiante123';
+          errorDiv.style.display = 'block';
+        }
+      }
+    });
+
+    async function showDashboard(user) {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+      document.getElementById('userHeaderActions').style.display = 'flex';
+      document.getElementById('welcomeUserName').textContent = user.nombre;
+      document.getElementById('studentNameTitle').textContent = `Hola, ${user.nombre}`;
+      if (user.nivel) document.getElementById('studentNivelSubtitle').textContent = user.nivel;
+
+      let data = { classes: [], grades: [] };
+      try {
+        const res = await fetch('/api/student/dashboard');
+        if (res.ok) data = await res.json();
+      } catch (e) {
+        // Mock data local
+        data = {
+          classes: [
+            {
+              id: 'c_1',
+              titulo: 'Clase 1: La Identidad del Hijo de Dios',
+              nivel: 'Nivel 1: Cimientos de la Fe',
+              youtubeId: 'dQw4w9WgXcQ',
+              pptUrl: '#',
+              descripcion: 'En esta lección comprendemos el fundamento del nuevo nacimiento y la adopción como hijos de Dios.'
+            },
+            {
+              id: 'c_2',
+              titulo: 'Clase 2: El Poder de la Oración Diaria',
+              nivel: 'Nivel 1: Cimientos de la Fe',
+              youtubeId: 'dQw4w9WgXcQ',
+              pptUrl: '#',
+              descripcion: 'Cómo cultivar una vida íntima de oración diaria y comunión profunda con el Espíritu Santo.'
+            }
+          ],
+          grades: [
+            { unidad: 'Módulo 1 - Fundamentos', nota: 6.8, asistencia: '95%', observaciones: 'Excelente participación y compromiso en clases.' },
+            { unidad: 'Módulo 2 - Oración y Ayuno', nota: 7.0, asistencia: '100%', observaciones: 'Desempeño impecable.' }
+          ]
+        };
+      }
+
+      // Render Clases
+      const classesDiv = document.getElementById('classesList');
+      classesDiv.innerHTML = data.classes.map(c => `
+        <div class="class-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/${c.youtubeId}" allowfullscreen></iframe>
+          </div>
+          <div class="class-content">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--accent-orange); text-transform:uppercase;">${c.nivel}</span>
+            <h3 style="margin: 6px 0 10px 0;">${c.titulo}</h3>
+            <p style="font-size:0.95rem; margin-bottom: 16px;">${c.descripcion}</p>
+            ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank" class="btn btn-outline" style="padding:8px 16px; font-size:0.85rem;"><i class="ri-file-ppt-2-line text-orange"></i> Descargar Presentación PPT</a>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      // Render Notas
+      const gradesDiv = document.getElementById('gradesContainer');
+      if (data.grades.length === 0) {
+        gradesDiv.innerHTML = '<p>Aún no hay calificaciones registradas.</p>';
+      } else {
+        const avg = (data.grades.reduce((acc, g) => acc + g.nota, 0) / data.grades.length).toFixed(1);
+        gradesDiv.innerHTML = `
+          <div style="text-align:center; padding-bottom: 20px; border-bottom: 1px solid var(--border-light); margin-bottom: 20px;">
+            <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">PROMEDIO GENERAL</div>
+            <div class="grade-badge">${avg}</div>
+          </div>
+          ${data.grades.map(g => `
+            <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed var(--border-light);">
+              <div style="display:flex; justify-content:space-between; font-weight:700;">
+                <span>${g.unidad}</span>
+                <span style="color:var(--accent-orange); font-size:1.1rem;">${g.nota}</span>
+              </div>
+              <div style="font-size:0.85rem; color:var(--text-secondary); margin-top: 4px;">Asistencia: ${g.asistencia}</div>
+              ${g.observaciones ? `<div style="font-size:0.85rem; font-style:italic; margin-top:4px;">"${g.observaciones}"</div>` : ''}
+            </div>
+          `).join('')}
+        `;
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.reload();
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
