@@ -261,25 +261,23 @@ p {
 .logo-link {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
-.logo-icon {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, var(--accent-orange), #FF6B00);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.3rem;
-  box-shadow: 0 4px 12px rgba(255, 148, 31, 0.3);
+.header-logo-img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  transition: height var(--transition-fast);
 }
 
-.logo-text {
-  display: flex;
-  flex-direction: column;
+.header.scrolled .header-logo-img {
+  height: 48px;
+}
+
+.footer-logo-img {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo-title {

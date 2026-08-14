@@ -11,10 +11,10 @@ const CONFIG_OFICIAL = {
   COBERTURA: "CCINT — Centro Cristiano Internacional",
   
   // Dynamic Replaceable URLs (Configurables)
-  WHATSAPP_URL: "https://wa.me/56900000000?text=Hola,%20quisiera%20más%20información%20sobre%20la%20Iglesia%20Familias%20de%20Paz",
-  PHONE_NUMBER: "tel:+56900000000",
+  WHATSAPP_URL: "https://wa.me/56944574436", // Reemplazar con nro real
+  PHONE_NUMBER: "tel:+56944574436",
   INSTAGRAM_URL: "https://instagram.com/familiasdepaz",
-  YOUTUBE_URL: "https://youtube.com/@familiasdepaz",
+  YOUTUBE_URL: "https://www.youtube.com/@iglesiafamiliasdepaz",
   ZOOM_URL: "https://zoom.us/j/0000000000",
   MAPS_URL: "https://maps.app.goo.gl/4VhWWrfdAqXyxSXX6"
 };

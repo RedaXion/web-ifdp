@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuna Profética | Iglesia Familias de Paz</title>
+  <meta name="description" content="Cuna Profética - Espacio dinámico y seguro destinado a la enseñanza bíblica y espiritual para nuestros niños de hasta 11 años.">
+  
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Remix Icon CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .cp-hero {
+      position: relative;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      background-image: url('images/10.jpg');
+      background-size: cover;
+      background-position: center;
+      margin-top: 80px;
+    }
+    .cp-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      z-index: 1;
+    }
+    .cp-hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+      padding: 0 20px;
+    }
+    .cp-content-section {
+      padding: 80px 0;
+      background: var(--bg-main);
+      text-align: center;
+    }
+    .cp-construction-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 50px 30px;
+      max-width: 700px;
+      margin: 0 auto;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-md);
+    }
+    .cp-icon {
+      font-size: 4rem;
+      color: var(--accent-orange);
+      margin-bottom: 20px;
+    }
+    .cp-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+    .cp-text {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       HEADER & NAVIGATION
+       ========================================================================== -->
+  <header class="header" id="mainHeader">
+    <div class="container nav-container">
+      <a href="index.html" class="logo-link">
+        <img src="images/logo.png" alt="Familias de Paz Logo" class="header-logo-img">
+      </a>
+
+      <nav>
+        <ul class="nav-menu" id="navMenu">
+          <li><a href="index.html#inicio" class="nav-link">Inicio</a></li>
+          <li><a href="index.html#nuestra-iglesia" class="nav-link">Nuestra Iglesia</a></li>
+          <li><a href="index.html#reuniones" class="nav-link">Reuniones</a></li>
+          <li class="nav-dropdown">
+            <a href="discipulado.html" class="nav-link">Discipulado <i class="ri-arrow-down-s-line"></i></a>
+            <ul class="dropdown-menu">
+              <li><a href="discipulado.html"><i class="ri-user-smile-line"></i> Portal Estudiantes</a></li>
+              <li><a href="paidagogos.html"><i class="ri-user-star-line"></i> Portal Paidagogos</a></li>
+            </ul>
+          </li>
+          <li><a href="index.html#ministerios" class="nav-link">Ministerios</a></li>
+          <li><a href="cuna-profetica.html" class="nav-link active">Cuna Profética</a></li>
+          <li><a href="index.html#predicaciones" class="nav-link">Predicaciones</a></li>
+          <li><a href="index.html#ubicacion" class="nav-link">Ubicación</a></li>
+          <li><a href="index.html#contacto" class="nav-link">Contacto</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="index.html#ubicacion" class="btn btn-primary">
+          <i class="ri-map-pin-line"></i> Visítanos
+        </a>
+      </div>
+
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Abrir menú de navegación">
+        <i class="ri-menu-line"></i>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="cp-hero">
+      <div class="cp-hero-overlay"></div>
+      <div class="cp-hero-content">
+        <h1 style="font-size: clamp(2.5rem, 5vw, 3.8rem); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 10px;">Cuna Profética</h1>
+        <p style="font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 500; opacity: 0.9;">Un lugar para que nuestros niños conozcan, amen y crezcan en Dios.</p>
+      </div>
+    </section>
+
+    <!-- Main Content Placeholder -->
+    <section class="cp-content-section">
+      <div class="container">
+        <div class="cp-construction-card">
+          <div class="cp-icon">
+            <i class="ri-palette-line"></i>
+          </div>
+          <h2 class="cp-title">Página en Construcción</h2>
+          <p class="cp-text">
+            Estamos diseñando un espacio interactivo muy especial para los más pequeños de la casa. Muy pronto encontrarás aquí los contenidos, actividades, recursos y novedades de Cuna Profética.
+          </p>
+          <a href="index.html" class="btn btn-primary">
+            <i class="ri-arrow-left-line"></i> Volver al Inicio
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        
+        <div class="footer-brand">
+          <div class="logo-link">
+            <img src="images/logo.png" alt="Familias de Paz Logo" class="footer-logo-img">
+          </div>
+          <p>
+            Una familia donde puedes encontrar un lugar, crecer en tu fe y servir a Dios.
+          </p>
+          <p>
+            📍 <a href="#" data-link="maps" target="_blank" rel="noopener" style="color: inherit; text-decoration: none;"><strong>Las Heras 460, San Felipe, Chile</strong></a>
+          </p>
+        </div>
+
+        <div>
+          <h4>Enlaces Rápidos</h4>
+          <ul class="footer-links">
+            <li><a href="index.html#inicio">Inicio</a></li>
+            <li><a href="index.html#nuestra-iglesia">Nuestra Iglesia</a></li>
+            <li><a href="index.html#reuniones">Reuniones</a></li>
+            <li><a href="index.html#ministerios">Ministerios</a></li>
+            <li><a href="cuna-profetica.html">Cuna Profética</a></li>
+            <li><a href="index.html#contacto">Contacto</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Contacto & Redes</h4>
+          <ul class="footer-links">
+            <li><a href="#" data-link="whatsapp" target="_blank" rel="noopener"><i class="ri-whatsapp-line"></i> WhatsApp</a></li>
+            <li><a href="#" data-link="instagram" target="_blank" rel="noopener"><i class="ri-instagram-line"></i> Instagram</a></li>
+            <li><a href="#" data-link="youtube" target="_blank" rel="noopener"><i class="ri-youtube-line"></i> YouTube</a></li>
+            <li><a href="#" data-link="zoom" target="_blank" rel="noopener"><i class="ri-vidicon-line"></i> Reuniones Zoom</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Iglesia Familias de Paz. Todos los derechos reservados.</p>
+        <p>Bajo Cobertura CCINT · San Felipe, Chile</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
