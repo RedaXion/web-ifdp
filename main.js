@@ -16,7 +16,7 @@ const CONFIG_OFICIAL = {
   INSTAGRAM_URL: "https://instagram.com/familiasdepaz",
   YOUTUBE_URL: "https://youtube.com/@familiasdepaz",
   ZOOM_URL: "https://zoom.us/j/0000000000",
-  MAPS_URL: "https://maps.google.com/?q=Las+Heras+460,+San+Felipe,+Chile"
+  MAPS_URL: "https://maps.app.goo.gl/4VhWWrfdAqXyxSXX6"
 };
 
 document.addEventListener('DOMContentLoaded', () => {
