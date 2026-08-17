@@ -58,3 +58,11 @@ ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;
 INSERT INTO users (id, nombre, username, password_hash, role, nivel)
 VALUES ('u_paidagogo_1', 'Paidagogo Juan Pérez', 'paidagogo1', '$2a$10$kF.UDTrmiK6Bu2PLhs1XAunqAy.QUMyrIfI4DOLpQcGbrLY34u8sa', 'paidagogo', 'Nivel 1: Corderitos')
 ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, nivel = EXCLUDED.nivel;
+
+CREATE TABLE IF NOT EXISTS nota_noa (
+    id SERIAL PRIMARY KEY,
+    pedagogo_id VARCHAR(50) REFERENCES users(id) ON DELETE CASCADE,
+    evaluacion_id VARCHAR(50) REFERENCES evaluations(id) ON DELETE CASCADE,
+    archivo_url TEXT NOT NULL,
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

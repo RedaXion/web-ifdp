@@ -292,6 +292,52 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
   }
 });
 
+app.get('/api/admin/export', authRole(['admin']), async (req, res) => {
+  try {
+    const nivel = req.query.nivel;
+    let usersQuery = 'SELECT id, username, nombre, email, role, nivel FROM users';
+    let usersParams = [];
+    if (nivel) {
+      const nivelStr = nivel === '1' ? 'Nivel 1: Corderitos' : nivel === '2' ? 'Nivel 2: Tekníon' : 'Nivel 3: Neaniskos';
+      usersQuery += ' WHERE nivel = $1';
+      usersParams.push(nivelStr);
+    }
+    const usersRes = await pool.query(usersQuery, usersParams);
+    const users = usersRes.rows;
+
+    let csv = 'ID,Nombre,Username,Email,Rol,Nivel\n';
+    users.forEach(u => {
+      csv += `"${u.id}","${u.nombre}","${u.username}","${u.email}","${u.role}","${u.nivel}"\n`;
+    });
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('exportacion_ifdp.csv');
+    res.send(csv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error');
+  }
+});
+
+const upload = multer({ dest: path.join(__dirname, 'uploads/') });
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.post('/api/paidagogo/noa', authRole(['paidagogo', 'admin']), upload.single('archivo'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No se subió archivo' });
+    const { evaluacionId } = req.body;
+    const url = '/uploads/' + req.file.filename;
+    await pool.query(
+      'INSERT INTO nota_noa (pedagogo_id, evaluacion_id, archivo_url) VALUES ($1, $2, $3)',
+      [req.session.user.id, evaluacionId || null, url]
+    );
+    res.json({ success: true, url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+});
+
 // Crear usuario
 app.post('/api/admin/users', authRole(['admin']), async (req, res) => {
   const { username, password, nombre, email, role, nivel } = req.body;
