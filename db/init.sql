@@ -20,16 +20,24 @@ CREATE TABLE IF NOT EXISTS classes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS evaluations (
+    id VARCHAR(50) PRIMARY KEY,
+    titulo VARCHAR(150) NOT NULL,
+    nivel VARCHAR(100) NOT NULL,
+    puntaje_total NUMERIC(5, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS grades (
     id VARCHAR(50) PRIMARY KEY,
     student_id VARCHAR(50) REFERENCES users(id) ON DELETE CASCADE,
-    unidad VARCHAR(150) NOT NULL,
+    evaluation_id VARCHAR(50) REFERENCES evaluations(id) ON DELETE CASCADE,
     puntaje_obtenido NUMERIC(5, 2) NOT NULL,
-    puntaje_total NUMERIC(5, 2) NOT NULL,
     nota NUMERIC(3, 1) NOT NULL,
     porcentaje INTEGER NOT NULL,
     observaciones TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(student_id, evaluation_id)
 );
 
 CREATE TABLE IF NOT EXISTS attendance (
@@ -37,7 +45,8 @@ CREATE TABLE IF NOT EXISTS attendance (
     class_id VARCHAR(50) REFERENCES classes(id) ON DELETE CASCADE,
     student_id VARCHAR(50) REFERENCES users(id) ON DELETE CASCADE,
     status VARCHAR(20) NOT NULL DEFAULT 'presente',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(student_id, class_id)
 );
 
 -- Inserción de usuario administrador por defecto si no existe
@@ -47,5 +56,5 @@ ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;
 
 -- Inserción de un paidagogo por defecto si no existe
 INSERT INTO users (id, nombre, username, password_hash, role, nivel)
-VALUES ('u_paidagogo_1', 'Paidagogo Juan Pérez', 'paidagogo1', '$2a$10$kF.UDTrmiK6Bu2PLhs1XAunqAy.QUMyrIfI4DOLpQcGbrLY34u8sa', 'paidagogo', 'Paidagogo')
-ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;
+VALUES ('u_paidagogo_1', 'Paidagogo Juan Pérez', 'paidagogo1', '$2a$10$kF.UDTrmiK6Bu2PLhs1XAunqAy.QUMyrIfI4DOLpQcGbrLY34u8sa', 'paidagogo', 'Nivel 1: Corderitos')
+ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, nivel = EXCLUDED.nivel;

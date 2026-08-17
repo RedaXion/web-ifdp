@@ -3,6 +3,8 @@ const session = require('express-session');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const multer = require('multer'); // added for file uploads
+const fs = require('fs'); // file system utilities
 const { pool, initDB } = require('./db/pg');
 
 const app = express();
@@ -19,6 +21,18 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 horas
 }));
+
+// Persistent upload directory (Railway) and Multer config
+const uploadDir = path.join(__dirname, 'persistent', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+const upload = multer({ dest: uploadDir });
+// Serve uploaded files via /uploads URL
+app.use('/uploads', express.static(uploadDir));
+
+// Super admin email constant
+const SUPERADMIN_EMAIL = 'chris.rodval@gmail.com';
 
 // Servir la web principal de la iglesia
 app.use(express.static(path.join(__dirname)));
@@ -52,8 +66,9 @@ app.post('/api/login', async (req, res) => {
       id: user.id,
       username: user.username,
       nombre: user.nombre,
+      email: user.email,
       role: user.role,
-      nivel: user.nivel || ''
+      nivel: user.nivel_id || null
     };
 
     res.json({ success: true, user: req.session.user });
@@ -80,6 +95,12 @@ function authRole(roles = []) {
   return (req, res, next) => {
     if (!req.session.user) {
       return res.status(401).json({ error: 'No autorizado. Debe iniciar sesión.' });
+    }
+    // Super‑admin bypass
+    const isSuper = req.session.user.email && req.session.user.email.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase();
+    if (isSuper) {
+      req.session.user.isSuperAdmin = true;
+      return next();
     }
     if (roles.length && !roles.includes(req.session.user.role)) {
       return res.status(403).json({ error: 'Acceso denegado. Rol insuficiente.' });
@@ -210,16 +231,24 @@ app.post('/api/paidagogo/attendance', authRole(['paidagogo', 'admin']), async (r
     // Limpiar previa
     await pool.query('DELETE FROM attendance WHERE class_id = $1', [classId]);
     
-    const studentsRes = await pool.query("SELECT id FROM users WHERE role = 'student'");
+    // Obtener estudiantes del mismo nivel que el pedagogo
+    const nivelId = req.session.user.nivel; // nivel_id almacenado en sesión
+    const studentsRes = await pool.query(
+      "SELECT id FROM users WHERE role = 'student' AND nivel_id = $1",
+      [nivelId]
+    );
     const students = studentsRes.rows;
 
-    for(let student of students) {
-      const status = absentStudentIds.includes(student.id) ? 'ausente' : 'presente';
+    for (let student of students) {
+      const status = absentStudentIds && absentStudentIds.includes(student.id) ? 'ausente' : 'presente';
       const attId = 'a_' + Date.now() + '_' + student.id;
-      await pool.query('INSERT INTO attendance (id, class_id, student_id, status) VALUES ($1, $2, $3, $4)', [attId, classId, student.id, status]);
+      await pool.query(
+        'INSERT INTO attendance (id, class_id, student_id, status) VALUES ($1, $2, $3, $4)',
+        [attId, classId, student.id, status]
+      );
     }
     res.json({ success: true });
-  } catch(err) {
+  } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error del servidor' });
   }
@@ -234,9 +263,11 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
     const gradesRes = await pool.query('SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones FROM grades');
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance');
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
+    const noaRes = await pool.query('SELECT id, pedagogo_id as "pedagogoId", evaluacion_id as "evaluacionId", archivo_url as "archivoUrl", fecha_subida as "fechaSubida" FROM nota_noa');
 
     const grades = gradesRes.rows.map(g => ({...g, nota: parseFloat(g.nota)}));
     const attendance = attRes.rows;
+    const noas = noaRes.rows;
 
     const usersWithStats = usersRes.rows.map(u => {
       let uGrades = grades.filter(g => g.studentId === u.id);
@@ -252,7 +283,8 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
       users: usersWithStats,
       classes: classesRes.rows,
       grades,
-      attendance
+      attendance,
+      noas
     });
   } catch(err) {
     console.error(err);
@@ -270,7 +302,7 @@ app.post('/api/admin/users', authRole(['admin']), async (req, res) => {
     const newId = 'u_' + Date.now();
     const hash = bcrypt.hashSync(password || '123456', 10);
     const uRole = role || 'student';
-    const uNivel = nivel || 'Nivel 1';
+    const uNivel = nivel || 'Nivel 1: Corderitos';
 
     await pool.query(
       'INSERT INTO users (id, username, password_hash, nombre, email, role, nivel) VALUES ($1, $2, $3, $4, $5, $6, $7)',
@@ -317,7 +349,7 @@ app.post('/api/admin/classes', authRole(['admin']), async (req, res) => {
   try {
     await pool.query(
       'INSERT INTO classes (id, titulo, nivel, youtube_id, ppt_url, apunte_url, descripcion) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [newId, titulo, nivel || 'Nivel 1', yId, pptUrl || '', apunteUrl || '', descripcion || '']
+      [newId, titulo, nivel || 'Nivel 1: Corderitos', yId, pptUrl || '', apunteUrl || '', descripcion || '']
     );
     res.json({ success: true });
   } catch(err) {

@@ -261,7 +261,7 @@
         <tr>
           <td>
             <strong>${s.nombre}</strong><br>
-            <span style="font-size:0.8rem; color:var(--text-muted);">${s.nivel || 'Nivel 1'}</span>
+            <span style="font-size:0.8rem; color:var(--text-muted);">${s.nivel || 'Nivel 1: Corderitos'}</span>
           </td>
           <td>
             ${s.grades.length ? s.grades.map(g => `<span style="display:inline-block; background:#E0F2FE; color:#0284C7; padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; margin:2px;" title="${g.puntajeObtenido}/${g.puntajeTotal}">${g.unidad}: ${g.nota} (${g.porcentaje}%)</span>`).join(' ') : '<em style="color:var(--text-muted); font-size:0.85rem;">Sin notas</em>'}

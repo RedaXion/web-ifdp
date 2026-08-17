@@ -74,9 +74,20 @@
           <h2>Gestión de Clases, Contenidos & Usuarios</h2>
         </div>
         <div>
+          <button onclick="exportCSV()" class="btn btn-outline" style="margin-right: 10px; border-color: #0F172A; color: #0F172A;"><i class="ri-file-excel-2-line"></i> Exportar CSV</button>
           <button onclick="openClassModal()" class="btn btn-primary"><i class="ri-video-add-line"></i> + Subir Nueva Clase</button>
           <button onclick="openUserModal()" class="btn btn-dark" style="margin-left: 10px;"><i class="ri-user-add-line"></i> + Crear Usuario</button>
         </div>
+      </div>
+
+      <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+        <label style="font-weight: 600; font-size: 0.9rem;">Filtrar Vista por Nivel:</label>
+        <select id="adminLevelFilter" onchange="loadOverview()" style="padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); max-width: 250px;">
+          <option value="">Todos los Niveles</option>
+          <option value="1">Nivel 1: Corderitos</option>
+          <option value="2">Nivel 2: Tekníon</option>
+          <option value="3">Nivel 3: Neaniskos</option>
+        </select>
       </div>
 
       <div class="admin-grid">
@@ -93,6 +104,7 @@
           <div id="adminUsersList"></div>
         </div>
 
+      </div>
       <div class="admin-grid" style="margin-top: 30px;">
         
         <!-- Panel de Notas (Evaluaciones) -->
@@ -109,6 +121,15 @@
           <div id="adminAttendanceList"></div>
         </div>
 
+      </div>
+
+      <div class="admin-grid" style="margin-top: 30px;">
+        <!-- Panel de Archivos NOA -->
+        <div class="admin-card" style="grid-column: 1 / -1;">
+          <h3 style="margin-bottom: 20px;"><i class="ri-file-copy-2-line text-orange"></i> Archivos Físicos (NOA) Subidos</h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom: 15px;">Archivos de calificaciones físicas subidos por los pedagogos.</p>
+          <div id="adminNoaList"></div>
+        </div>
       </div>
     </div>
 
@@ -174,7 +195,11 @@
           </div>
           <div class="form-group">
             <label>Nivel de Discipulado</label>
-            <input type="text" id="classNivel" value="Nivel 1: Cimientos de la Fe" required>
+            <select id="classNivel" required>
+              <option value="Nivel 1: Corderitos">Nivel 1: Corderitos</option>
+              <option value="Nivel 2: Tekníon">Nivel 2: Tekníon</option>
+              <option value="Nivel 3: Neaniskos">Nivel 3: Neaniskos</option>
+            </select>
           </div>
           <div class="form-group">
             <label>Enlace de Video en YouTube</label>
@@ -231,7 +256,11 @@
           </div>
           <div class="form-group">
             <label>Nivel de Discipulado (Si es estudiante)</label>
-            <input type="text" id="userNivel" value="Nivel 1: Cimientos de la Fe">
+            <select id="userNivel">
+              <option value="Nivel 1: Corderitos">Nivel 1: Corderitos</option>
+              <option value="Nivel 2: Tekníon">Nivel 2: Tekníon</option>
+              <option value="Nivel 3: Neaniskos">Nivel 3: Neaniskos</option>
+            </select>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
             <button type="button" onclick="closeUserModal()" class="btn btn-outline">Cancelar</button>
@@ -308,7 +337,7 @@
           classes: [
             {
               titulo: 'Clase 1: La Identidad del Hijo de Dios',
-              nivel: 'Nivel 1: Cimientos de la Fe',
+              nivel: 'Nivel 1: Corderitos',
               descripcion: 'Fundamento del nuevo nacimiento y la adopción.',
               youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
               pptUrl: 'https://example.com/ppt1.pdf'
@@ -317,8 +346,16 @@
         };
       }
 
+      const filterVal = document.getElementById('adminLevelFilter') ? document.getElementById('adminLevelFilter').value : '';
+      const filterNivelText = filterVal === '1' ? 'Nivel 1: Corderitos' : 
+                              filterVal === '2' ? 'Nivel 2: Tekníon' : 
+                              filterVal === '3' ? 'Nivel 3: Neaniskos' : '';
+
+      const filteredClasses = filterNivelText ? data.classes.filter(c => c.nivel === filterNivelText) : data.classes;
+      const filteredUsers = filterNivelText ? data.users.filter(u => u.nivel === filterNivelText || u.role === 'admin') : data.users;
+
       // Render Classes
-      document.getElementById('adminClassesList').innerHTML = data.classes.map(c => `
+      document.getElementById('adminClassesList').innerHTML = filteredClasses.map(c => `
         <div style="padding:14px; border-bottom:1px solid var(--border-light); margin-bottom:10px;">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong>${c.titulo}</strong>
@@ -334,7 +371,7 @@
       `).join('');
 
       // Render Users
-      document.getElementById('adminUsersList').innerHTML = data.users.map(u => `
+      document.getElementById('adminUsersList').innerHTML = filteredUsers.map(u => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border-light);">
           <div>
             <strong>${u.nombre}</strong> (@${u.username})<br>
@@ -350,7 +387,12 @@
 
       // Render Grades
       if(data.grades) {
-        document.getElementById('adminGradesList').innerHTML = data.grades.map(g => {
+        const filteredGrades = data.grades.filter(g => {
+          if (!filterNivelText) return true;
+          const st = data.users.find(u => u.id === g.studentId);
+          return st && st.nivel === filterNivelText;
+        });
+        document.getElementById('adminGradesList').innerHTML = filteredGrades.map(g => {
           const student = data.users.find(u => u.id === g.studentId);
           const studentName = student ? student.nombre : 'Desconocido';
           return `
@@ -366,7 +408,12 @@
 
       // Render Attendance
       if(data.attendance) {
-        document.getElementById('adminAttendanceList').innerHTML = data.attendance.map(a => {
+        const filteredAtt = data.attendance.filter(a => {
+          if (!filterNivelText) return true;
+          const st = data.users.find(u => u.id === a.studentId);
+          return st && st.nivel === filterNivelText;
+        });
+        document.getElementById('adminAttendanceList').innerHTML = filteredAtt.map(a => {
           const student = data.users.find(u => u.id === a.studentId);
           const c = data.classes.find(cl => cl.id === a.classId);
           const studentName = student ? student.nombre : 'Desconocido';
@@ -382,6 +429,28 @@
               <span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase; ${badgeColor}">${a.status}</span>
               <button onclick="openEditAttendanceModal('${a.id}', '${a.status}')" class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;">Editar</button>
             </div>
+          </div>
+        `}).join('');
+      }
+
+      // Render NOAs
+      if(data.noas) {
+        const filteredNoas = data.noas.filter(n => {
+          if (!filterNivelText) return true;
+          const p = data.users.find(u => u.id === n.pedagogoId);
+          return p && p.nivel === filterNivelText;
+        });
+        document.getElementById('adminNoaList').innerHTML = filteredNoas.map(n => {
+          const p = data.users.find(u => u.id === n.pedagogoId);
+          const pName = p ? p.nombre : 'Desconocido';
+          const dateStr = new Date(n.fechaSubida).toLocaleString('es-ES');
+          return `
+          <div style="padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong>Archivo NOA</strong> subido por <span style="font-weight:600;">${pName}</span><br>
+              <span style="font-size:0.8rem; color:var(--text-secondary);">Fecha: ${dateStr}</span>
+            </div>
+            <a href="${n.archivoUrl}" target="_blank" class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;"><i class="ri-download-line"></i> Descargar</a>
           </div>
         `}).join('');
       }
@@ -483,6 +552,15 @@
     async function logout() {
       await fetch('/api/logout', { method: 'POST' });
       window.location.reload();
+    }
+
+    function exportCSV() {
+      const filterVal = document.getElementById('adminLevelFilter') ? document.getElementById('adminLevelFilter').value : '';
+      let url = '/api/admin/export';
+      if (filterVal) {
+        url += '?nivel=' + filterVal;
+      }
+      window.open(url, '_blank');
     }
 
     checkAuth();
