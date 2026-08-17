@@ -117,7 +117,11 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
   try {
     const studentRes = await pool.query('SELECT id, nombre, nivel FROM users WHERE id = $1', [userId]);
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
-    const gradesRes = await pool.query('SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones FROM grades WHERE student_id = $1', [userId]);
+    const gradesRes = await pool.query(`
+      SELECT g.id, g.student_id as "studentId", e.titulo as unidad, g.puntaje_obtenido as "puntajeObtenido", e.puntaje_total as "puntajeTotal", g.nota, g.porcentaje, g.observaciones 
+      FROM grades g JOIN evaluations e ON g.evaluation_id = e.id 
+      WHERE g.student_id = $1
+    `, [userId]);
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance WHERE student_id = $1', [userId]);
 
     res.json({
@@ -138,7 +142,10 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
 app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req, res) => {
   try {
     const studentsRes = await pool.query('SELECT id, nombre, username, email, role, nivel FROM users WHERE role = $1', ['student']);
-    const gradesRes = await pool.query('SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones FROM grades');
+    const gradesRes = await pool.query(`
+      SELECT g.id, g.student_id as "studentId", e.titulo as unidad, g.puntaje_obtenido as "puntajeObtenido", e.puntaje_total as "puntajeTotal", g.nota, g.porcentaje, g.observaciones 
+      FROM grades g JOIN evaluations e ON g.evaluation_id = e.id
+    `);
 
     const studentsWithGrades = studentsRes.rows.map(s => ({
       ...s,
@@ -260,7 +267,10 @@ app.post('/api/paidagogo/attendance', authRole(['paidagogo', 'admin']), async (r
 app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
   try {
     const usersRes = await pool.query('SELECT id, username, nombre, email, role, nivel FROM users');
-    const gradesRes = await pool.query('SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones FROM grades');
+    const gradesRes = await pool.query(`
+      SELECT g.id, g.student_id as "studentId", e.titulo as unidad, g.puntaje_obtenido as "puntajeObtenido", e.puntaje_total as "puntajeTotal", g.nota, g.porcentaje, g.observaciones 
+      FROM grades g JOIN evaluations e ON g.evaluation_id = e.id
+    `);
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance');
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
     const noaRes = await pool.query('SELECT id, pedagogo_id as "pedagogoId", evaluacion_id as "evaluacionId", archivo_url as "archivoUrl", fecha_subida as "fechaSubida" FROM nota_noa');
@@ -318,9 +328,6 @@ app.get('/api/admin/export', authRole(['admin']), async (req, res) => {
     res.status(500).send('Error');
   }
 });
-
-const upload = multer({ dest: path.join(__dirname, 'uploads/') });
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.post('/api/paidagogo/noa', authRole(['paidagogo', 'admin']), upload.single('archivo'), async (req, res) => {
   try {

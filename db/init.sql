@@ -31,13 +31,13 @@ CREATE TABLE IF NOT EXISTS evaluations (
 CREATE TABLE IF NOT EXISTS grades (
     id VARCHAR(50) PRIMARY KEY,
     student_id VARCHAR(50) REFERENCES users(id) ON DELETE CASCADE,
-    evaluation_id VARCHAR(50) REFERENCES evaluations(id) ON DELETE CASCADE,
+    unidad VARCHAR(150) NOT NULL,
     puntaje_obtenido NUMERIC(5, 2) NOT NULL,
+    puntaje_total NUMERIC(5, 2) NOT NULL,
     nota NUMERIC(3, 1) NOT NULL,
     porcentaje INTEGER NOT NULL,
     observaciones TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(student_id, evaluation_id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS attendance (
