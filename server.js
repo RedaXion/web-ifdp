@@ -3,7 +3,7 @@ const session = require('express-session');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
-const { readDB, writeDB } = require('./db');
+const { pool, initDB } = require('./db/pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,30 +34,33 @@ function getYoutubeId(url) {
 // --------------------------------------------------------------------------
 // RUTAS DE AUTENTICACIÓN
 // --------------------------------------------------------------------------
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  const db = readDB();
-  
-  const user = db.users.find(u => u.username.toLowerCase() === (username || '').toLowerCase() || u.email.toLowerCase() === (username || '').toLowerCase());
-  
-  if (!user) {
-    return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+  try {
+    const userRes = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($1)', [username || '']);
+    if (userRes.rows.length === 0) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+    const user = userRes.rows[0];
+
+    const validPassword = bcrypt.compareSync(password, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      nombre: user.nombre,
+      role: user.role,
+      nivel: user.nivel || ''
+    };
+
+    res.json({ success: true, user: req.session.user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
   }
-
-  const validPassword = bcrypt.compareSync(password, user.passwordHash);
-  if (!validPassword) {
-    return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-  }
-
-  req.session.user = {
-    id: user.id,
-    username: user.username,
-    nombre: user.nombre,
-    role: user.role,
-    nivel: user.nivel || ''
-  };
-
-  res.json({ success: true, user: req.session.user });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -88,135 +91,239 @@ function authRole(roles = []) {
 // --------------------------------------------------------------------------
 // RUTAS API - ESTUDIANTES (/discipulado)
 // --------------------------------------------------------------------------
-app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), (req, res) => {
-  const db = readDB();
+app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), async (req, res) => {
   const userId = req.query.studentId || req.session.user.id;
-  
-  const student = db.users.find(u => u.id === userId);
-  const classes = db.classes;
-  const grades = db.grades.filter(g => g.studentId === userId);
+  try {
+    const studentRes = await pool.query('SELECT id, nombre, nivel FROM users WHERE id = $1', [userId]);
+    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
+    const gradesRes = await pool.query('SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones FROM grades WHERE student_id = $1', [userId]);
+    const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance WHERE student_id = $1', [userId]);
 
-  res.json({
-    student: student ? { id: student.id, nombre: student.nombre, nivel: student.nivel } : null,
-    classes,
-    grades
-  });
+    res.json({
+      student: studentRes.rows.length > 0 ? studentRes.rows[0] : null,
+      classes: classesRes.rows,
+      grades: gradesRes.rows.map(g => ({...g, nota: parseFloat(g.nota)})),
+      attendance: attRes.rows
+    });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
 });
 
 // --------------------------------------------------------------------------
 // RUTAS API - PAIDAGOGOS (/discipulado/paidagogos)
 // --------------------------------------------------------------------------
-app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), (req, res) => {
-  const db = readDB();
-  const students = db.users.filter(u => u.role === 'student');
-  const grades = db.grades;
+app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req, res) => {
+  try {
+    const studentsRes = await pool.query('SELECT id, nombre, username, email, role, nivel FROM users WHERE role = $1', ['student']);
+    const gradesRes = await pool.query('SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones FROM grades');
 
-  const studentsWithGrades = students.map(s => ({
-    ...s,
-    grades: grades.filter(g => g.studentId === s.id)
-  }));
+    const studentsWithGrades = studentsRes.rows.map(s => ({
+      ...s,
+      grades: gradesRes.rows.filter(g => g.studentId === s.id).map(g => ({...g, nota: parseFloat(g.nota)}))
+    }));
 
-  res.json(studentsWithGrades);
-});
-
-app.post('/api/paidagogo/grades', authRole(['paidagogo', 'admin']), (req, res) => {
-  const { studentId, unidad, nota, asistencia, observaciones } = req.body;
-  const db = readDB();
-
-  const newGrade = {
-    id: 'g_' + Date.now(),
-    studentId,
-    unidad,
-    nota: parseFloat(nota),
-    asistencia: asistencia || '100%',
-    observaciones: observaciones || ''
-  };
-
-  db.grades.push(newGrade);
-  writeDB(db);
-
-  res.json({ success: true, grade: newGrade });
-});
-
-app.put('/api/paidagogo/grades/:id', authRole(['paidagogo', 'admin']), (req, res) => {
-  const gradeId = req.params.id;
-  const { nota, asistencia, observaciones, unidad } = req.body;
-  const db = readDB();
-
-  const index = db.grades.findIndex(g => g.id === gradeId);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Calificación no encontrada' });
+    res.json(studentsWithGrades);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
   }
+});
 
-  db.grades[index] = {
-    ...db.grades[index],
-    unidad: unidad || db.grades[index].unidad,
-    nota: nota !== undefined ? parseFloat(nota) : db.grades[index].nota,
-    asistencia: asistencia !== undefined ? asistencia : db.grades[index].asistencia,
-    observaciones: observaciones !== undefined ? observaciones : db.grades[index].observaciones
-  };
+app.post('/api/paidagogo/grades', authRole(['paidagogo', 'admin']), async (req, res) => {
+  const { studentId, unidad, puntajeObtenido, puntajeTotal, observaciones } = req.body;
 
-  writeDB(db);
-  res.json({ success: true, grade: db.grades[index] });
+  const pTotal = parseFloat(puntajeTotal);
+  const pObtenido = parseFloat(puntajeObtenido);
+  const exigencia = pTotal * 0.6;
+  
+  let nota = 1.0;
+  if (pObtenido < exigencia) {
+    nota = (pObtenido / exigencia) * 3 + 1;
+  } else {
+    nota = ((pObtenido - exigencia) / (pTotal * 0.4)) * 3 + 4;
+  }
+  nota = Math.round(nota * 10) / 10;
+  if(nota < 1.0) nota = 1.0;
+  if(nota > 7.0) nota = 7.0;
+
+  const porcentaje = Math.round((pObtenido / pTotal) * 100);
+  const newId = 'g_' + Date.now();
+
+  try {
+    await pool.query(
+      'INSERT INTO grades (id, student_id, unidad, puntaje_obtenido, puntaje_total, nota, porcentaje, observaciones) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [newId, studentId, unidad, pObtenido, pTotal, nota, porcentaje, observaciones || '']
+    );
+
+    res.json({ success: true, grade: { id: newId, studentId, unidad, puntajeObtenido: pObtenido, puntajeTotal: pTotal, nota, porcentaje, observaciones } });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al guardar nota' });
+  }
+});
+
+app.put('/api/paidagogo/grades/:id', authRole(['paidagogo', 'admin']), async (req, res) => {
+  const gradeId = req.params.id;
+  const { unidad, puntajeObtenido, puntajeTotal, observaciones } = req.body;
+
+  try {
+    const existing = await pool.query('SELECT * FROM grades WHERE id = $1', [gradeId]);
+    if(existing.rows.length === 0) return res.status(404).json({ error: 'Calificación no encontrada' });
+    const g = existing.rows[0];
+
+    const pTotal = puntajeTotal !== undefined ? parseFloat(puntajeTotal) : parseFloat(g.puntaje_total);
+    const pObtenido = puntajeObtenido !== undefined ? parseFloat(puntajeObtenido) : parseFloat(g.puntaje_obtenido);
+    const exigencia = pTotal * 0.6;
+    
+    let nota = 1.0;
+    if (pObtenido < exigencia) {
+      nota = (pObtenido / exigencia) * 3 + 1;
+    } else {
+      nota = ((pObtenido - exigencia) / (pTotal * 0.4)) * 3 + 4;
+    }
+    nota = Math.round(nota * 10) / 10;
+    if(nota < 1.0) nota = 1.0;
+    if(nota > 7.0) nota = 7.0;
+
+    const porcentaje = Math.round((pObtenido / pTotal) * 100);
+
+    const newUnidad = unidad || g.unidad;
+    const newObs = observaciones !== undefined ? observaciones : g.observaciones;
+
+    await pool.query(
+      'UPDATE grades SET unidad = $1, puntaje_obtenido = $2, puntaje_total = $3, nota = $4, porcentaje = $5, observaciones = $6 WHERE id = $7',
+      [newUnidad, pObtenido, pTotal, nota, porcentaje, newObs, gradeId]
+    );
+
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+app.post('/api/paidagogo/attendance', authRole(['paidagogo', 'admin']), async (req, res) => {
+  const { classId, absentStudentIds } = req.body;
+  try {
+    // Limpiar previa
+    await pool.query('DELETE FROM attendance WHERE class_id = $1', [classId]);
+    
+    const studentsRes = await pool.query("SELECT id FROM users WHERE role = 'student'");
+    const students = studentsRes.rows;
+
+    for(let student of students) {
+      const status = absentStudentIds.includes(student.id) ? 'ausente' : 'presente';
+      const attId = 'a_' + Date.now() + '_' + student.id;
+      await pool.query('INSERT INTO attendance (id, class_id, student_id, status) VALUES ($1, $2, $3, $4)', [attId, classId, student.id, status]);
+    }
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
 });
 
 // --------------------------------------------------------------------------
 // RUTAS API - ADMIN (/discipulado/admin)
 // --------------------------------------------------------------------------
-app.get('/api/admin/overview', authRole(['admin']), (req, res) => {
-  const db = readDB();
-  res.json({
-    users: db.users.map(u => ({ id: u.id, username: u.username, nombre: u.nombre, email: u.email, role: u.role, nivel: u.nivel })),
-    classes: db.classes,
-    gradesCount: db.grades.length
-  });
+app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
+  try {
+    const usersRes = await pool.query('SELECT id, username, nombre, email, role, nivel FROM users');
+    const gradesRes = await pool.query('SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones FROM grades');
+    const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance');
+    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
+
+    const grades = gradesRes.rows.map(g => ({...g, nota: parseFloat(g.nota)}));
+    const attendance = attRes.rows;
+
+    const usersWithStats = usersRes.rows.map(u => {
+      let uGrades = grades.filter(g => g.studentId === u.id);
+      let avgGrade = uGrades.length > 0 ? (uGrades.reduce((acc, g) => acc + g.nota, 0) / uGrades.length).toFixed(1) : 'N/A';
+      
+      let uAtt = attendance.filter(a => a.studentId === u.id);
+      let avgAtt = uAtt.length > 0 ? (uAtt.filter(a => a.status === 'presente').length / uAtt.length * 100).toFixed(0) + '%' : 'N/A';
+
+      return { ...u, avgGrade, avgAttendance: avgAtt };
+    });
+
+    res.json({
+      users: usersWithStats,
+      classes: classesRes.rows,
+      grades,
+      attendance
+    });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
 });
 
 // Crear usuario
-app.post('/api/admin/users', authRole(['admin']), (req, res) => {
+app.post('/api/admin/users', authRole(['admin']), async (req, res) => {
   const { username, password, nombre, email, role, nivel } = req.body;
-  const db = readDB();
+  try {
+    const check = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+    if(check.rows.length > 0) return res.status(400).json({ error: 'El nombre de usuario ya existe' });
 
-  if (db.users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-    return res.status(400).json({ error: 'El nombre de usuario ya existe' });
+    const newId = 'u_' + Date.now();
+    const hash = bcrypt.hashSync(password || '123456', 10);
+    const uRole = role || 'student';
+    const uNivel = nivel || 'Nivel 1';
+
+    await pool.query(
+      'INSERT INTO users (id, username, password_hash, nombre, email, role, nivel) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [newId, username, hash, nombre, email || '', uRole, uNivel]
+    );
+
+    res.json({ success: true, user: { id: newId, username, role: uRole } });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
   }
+});
 
-  const newUser = {
-    id: 'u_' + Date.now(),
-    username,
-    passwordHash: bcrypt.hashSync(password || '123456', 10),
-    nombre,
-    email,
-    role: role || 'student',
-    nivel: nivel || 'Nivel 1'
-  };
+// Eliminar usuario
+app.delete('/api/admin/users/:id', authRole(['admin']), async (req, res) => {
+  try {
+    // ON DELETE CASCADE en grades y attendance lo manejará si está configurado
+    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
 
-  db.users.push(newUser);
-  writeDB(db);
-
-  res.json({ success: true, user: { id: newUser.id, username: newUser.username, role: newUser.role } });
+// Editar Asistencia
+app.put('/api/admin/attendance/:id', authRole(['admin']), async (req, res) => {
+  const { status } = req.body;
+  try {
+    await pool.query('UPDATE attendance SET status = $1 WHERE id = $2', [status, req.params.id]);
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
 });
 
 // Crear/Subir clase con PPT y Youtube
-app.post('/api/admin/classes', authRole(['admin']), (req, res) => {
-  const { titulo, nivel, youtubeUrl, pptUrl, descripcion, fecha } = req.body;
-  const db = readDB();
-
-  const newClass = {
-    id: 'c_' + Date.now(),
-    titulo,
-    nivel: nivel || 'Nivel 1',
-    youtubeUrl,
-    youtubeId: getYoutubeId(youtubeUrl),
-    pptUrl,
-    descripcion,
-    fecha: fecha || new Date().toISOString().split('T')[0]
-  };
-
-  db.classes.push(newClass);
-  writeDB(db);
-
-  res.json({ success: true, classItem: newClass });
+app.post('/api/admin/classes', authRole(['admin']), async (req, res) => {
+  const { titulo, nivel, youtubeUrl, pptUrl, apunteUrl, descripcion } = req.body;
+  const newId = 'c_' + Date.now();
+  const yId = getYoutubeId(youtubeUrl);
+  
+  try {
+    await pool.query(
+      'INSERT INTO classes (id, titulo, nivel, youtube_id, ppt_url, apunte_url, descripcion) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [newId, titulo, nivel || 'Nivel 1', yId, pptUrl || '', apunteUrl || '', descripcion || '']
+    );
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
 });
 
 // Rutas de Páginas HTML para Discipulado
@@ -233,13 +340,15 @@ app.get('/discipulado/admin', (req, res) => {
 });
 
 // Arrancar Servidor
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`Servidor Iglesia Familias de Paz ejecutándose`);
-  console.log(`Puerto: http://localhost:${PORT}`);
-  console.log(`Web Oficial: http://localhost:${PORT}`);
-  console.log(`Discipulado Alumnos: http://localhost:${PORT}/discipulado`);
-  console.log(`Discipulado Paidagogos: http://localhost:${PORT}/discipulado/paidagogos`);
-  console.log(`Discipulado Admin: http://localhost:${PORT}/discipulado/admin`);
-  console.log(`====================================================`);
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`Servidor Iglesia Familias de Paz ejecutándose (Postgres)`);
+    console.log(`Puerto: http://localhost:${PORT}`);
+    console.log(`Web Oficial: http://localhost:${PORT}`);
+    console.log(`Discipulado Alumnos: http://localhost:${PORT}/discipulado`);
+    console.log(`Discipulado Paidagogos: http://localhost:${PORT}/discipulado/paidagogos`);
+    console.log(`Discipulado Admin: http://localhost:${PORT}/discipulado/admin`);
+    console.log(`====================================================`);
+  });
 });

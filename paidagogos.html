@@ -69,23 +69,37 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div>
           <span class="section-badge" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;"><i class="ri-user-star-line"></i> Gestión Académica</span>
-          <h2>Planilla de Estudiantes & Calificaciones</h2>
+          <h2>Panel de Paidagogo</h2>
         </div>
-        <button onclick="openGradeModal()" class="btn btn-primary" style="background: #0284C7;"><i class="ri-add-line"></i> Ingresar Nueva Calificación</button>
       </div>
 
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Estudiante</th>
-              <th>Nivel</th>
-              <th>Calificaciones Registradas</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="studentsTableBody"></tbody>
-        </table>
+      <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;">
+        
+        <!-- Columna Clases -->
+        <div>
+          <h3 style="margin-bottom: 20px;"><i class="ri-video-line text-blue"></i> Clases & Materiales</h3>
+          <div id="classesList"></div>
+        </div>
+
+        <!-- Columna Estudiantes & Notas -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3><i class="ri-group-line text-blue"></i> Estudiantes & Evaluaciones</h3>
+            <button onclick="openGradeModal()" class="btn btn-primary" style="background: #0284C7; font-size: 0.8rem; padding: 6px 12px;"><i class="ri-add-line"></i> Ingresar Nota</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Estudiante</th>
+                  <th>Evaluaciones</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -99,20 +113,20 @@
             <select id="gradeStudentSelect" required></select>
           </div>
           <div class="form-group">
-            <label>Unidad / Módulo</label>
-            <input type="text" id="gradeUnidad" placeholder="Ej: Módulo 1 - Fundamentos" required>
+            <label>Nombre de la Evaluación</label>
+            <input type="text" id="gradeUnidad" placeholder="Ej: Evaluación 1" required>
           </div>
           <div class="form-group">
-            <label>Nota (1.0 a 7.0)</label>
-            <input type="number" step="0.1" min="1.0" max="7.0" id="gradeNota" placeholder="Ej: 6.5" required>
+            <label>Puntaje Obtenido</label>
+            <input type="number" step="0.5" id="gradeObtenido" placeholder="Ej: 25" required>
           </div>
           <div class="form-group">
-            <label>Asistencia (%)</label>
-            <input type="text" id="gradeAsistencia" placeholder="Ej: 90%" value="100%">
+            <label>Puntaje Total</label>
+            <input type="number" step="0.5" id="gradeTotal" placeholder="Ej: 30" required>
           </div>
           <div class="form-group">
             <label>Observaciones</label>
-            <textarea id="gradeObservaciones" rows="2" placeholder="Desempeño y comentarios..."></textarea>
+            <textarea id="gradeObservaciones" rows="2" placeholder="Comentarios..."></textarea>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
             <button type="button" onclick="closeGradeModal()" class="btn btn-outline">Cancelar</button>
@@ -122,10 +136,44 @@
       </div>
     </div>
 
+    <!-- MODAL CLASE VIEW -->
+    <div id="classModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:600px; max-height:90vh; overflow-y:auto;">
+        <h3 id="modalClassTitle" style="margin-bottom: 10px;"></h3>
+        <p id="modalClassDesc" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px;"></p>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="margin-bottom:10px;"><i class="ri-file-download-line text-blue"></i> Material de Apoyo</h4>
+          <div id="modalClassPpt" style="margin-bottom:10px;"></div>
+          <div id="modalClassApunte"></div>
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="margin-bottom:10px;"><i class="ri-youtube-line text-red"></i> Video de la Clase</h4>
+          <div id="modalClassVideo" style="position:relative; padding-bottom:56.25%; height:0; border-radius:8px; overflow:hidden;"></div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border-light); margin:20px 0;">
+        
+        <h4 style="margin-bottom:15px;"><i class="ri-calendar-check-line text-blue"></i> Control de Asistencia</h4>
+        <p style="font-size:0.85rem; margin-bottom:10px;">¿Quién faltó a esta clase? (Selecciona los ausentes, el resto quedará presente).</p>
+        <form id="attendanceForm">
+          <input type="hidden" id="attendanceClassId">
+          <div id="attendanceStudentsList" style="max-height:150px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:var(--radius-sm); margin-bottom:15px;"></div>
+          
+          <div style="display:flex; justify-content:flex-end; gap:12px;">
+            <button type="button" onclick="closeClassModal()" class="btn btn-outline">Cerrar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Asistencia</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </main>
 
   <script>
     let currentStudents = [];
+    let allClasses = [];
 
     async function checkAuth() {
       const res = await fetch('/api/me');
@@ -177,54 +225,102 @@
     }
 
     async function loadStudents() {
+      // Load classes
+      try {
+        const resClasses = await fetch('/api/student/dashboard');
+        if (resClasses.ok) {
+          const classData = await resClasses.json();
+          allClasses = (classData.classes || []).reverse(); // latest first
+        }
+      } catch (e) { console.error(e); }
+
+      // Load students
       try {
         const res = await fetch('/api/paidagogo/students');
         if (res.ok) currentStudents = await res.json();
       } catch (e) {
-        currentStudents = [
-          {
-            id: 'u_student_1',
-            nombre: 'María González',
-            email: 'maria@gmail.com',
-            nivel: 'Nivel 1: Cimientos de la Fe',
-            grades: [
-              { unidad: 'Módulo 1 - Fundamentos', nota: 6.8 },
-              { unidad: 'Módulo 2 - Oración', nota: 7.0 }
-            ]
-          },
-          {
-            id: 'u_student_2',
-            nombre: 'Carlos Benítez',
-            email: 'carlos@gmail.com',
-            nivel: 'Nivel 1: Cimientos de la Fe',
-            grades: [
-              { unidad: 'Módulo 1 - Fundamentos', nota: 6.2 }
-            ]
-          }
-        ];
+        currentStudents = [];
       }
+
+      // Render Classes Grid
+      const classesDiv = document.getElementById('classesList');
+      classesDiv.innerHTML = allClasses.map(c => `
+        <div style="background:white; border:1px solid var(--border-light); border-radius:var(--radius-md); padding:16px; margin-bottom:16px; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'" onclick="openClassModal('${c.id}')">
+          <span style="font-size:0.75rem; background:rgba(2,132,199,0.1); color:#0284C7; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${c.nivel}</span>
+          <h4 style="margin:8px 0;">${c.titulo}</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${c.descripcion}</p>
+        </div>
+      `).join('');
 
       const tbody = document.getElementById('studentsTableBody');
       const select = document.getElementById('gradeStudentSelect');
 
-      select.innerHTML = currentStudents.map(s => `<option value="${s.id}">${s.nombre} (${s.nivel || 'Sin nivel'})</option>`).join('');
+      select.innerHTML = currentStudents.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
 
       tbody.innerHTML = currentStudents.map(s => `
         <tr>
           <td>
             <strong>${s.nombre}</strong><br>
-            <span style="font-size:0.8rem; color:var(--text-muted);">${s.email}</span>
-          </td>
-          <td><span style="font-size:0.85rem; font-weight:600;">${s.nivel || 'Nivel 1'}</span></td>
-          <td>
-            ${s.grades.length ? s.grades.map(g => `<span style="display:inline-block; background:#E0F2FE; color:#0284C7; padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; margin:2px;">${g.unidad}: ${g.nota}</span>`).join(' ') : '<em style="color:var(--text-muted); font-size:0.85rem;">Sin notas</em>'}
+            <span style="font-size:0.8rem; color:var(--text-muted);">${s.nivel || 'Nivel 1'}</span>
           </td>
           <td>
-            <button onclick="openGradeModal('${s.id}')" class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem;">+ Agregar Nota</button>
+            ${s.grades.length ? s.grades.map(g => `<span style="display:inline-block; background:#E0F2FE; color:#0284C7; padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; margin:2px;" title="${g.puntajeObtenido}/${g.puntajeTotal}">${g.unidad}: ${g.nota} (${g.porcentaje}%)</span>`).join(' ') : '<em style="color:var(--text-muted); font-size:0.85rem;">Sin notas</em>'}
           </td>
         </tr>
       `).join('');
     }
+
+    function openClassModal(classId) {
+      const c = allClasses.find(x => x.id === classId);
+      if(!c) return;
+      
+      document.getElementById('modalClassTitle').textContent = c.titulo;
+      document.getElementById('modalClassDesc').textContent = c.descripcion;
+      
+      const pptDiv = document.getElementById('modalClassPpt');
+      pptDiv.innerHTML = c.pptUrl ? `<a href="${c.pptUrl}" target="_blank" class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem;"><i class="ri-file-ppt-2-line"></i> Descargar Presentación (PPT/PDF)</a>` : '<span style="font-size:0.85rem; color:var(--text-muted);">Sin presentación adjunta</span>';
+      
+      const apunteDiv = document.getElementById('modalClassApunte');
+      apunteDiv.innerHTML = c.apunteUrl ? `<a href="${c.apunteUrl}" target="_blank" class="btn btn-primary" style="background:#0284C7; padding:6px 12px; font-size:0.85rem;"><i class="ri-file-text-line"></i> Descargar Apunte del Paidagogo</a>` : '<span style="font-size:0.85rem; color:var(--text-muted);">Sin apunte adjunto</span>';
+      
+      const videoDiv = document.getElementById('modalClassVideo');
+      videoDiv.innerHTML = c.youtubeId ? `<iframe src="https://www.youtube.com/embed/${c.youtubeId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:#f1f5f9; color:var(--text-muted);">Sin video</div>';
+
+      document.getElementById('attendanceClassId').value = classId;
+      
+      const attList = document.getElementById('attendanceStudentsList');
+      attList.innerHTML = currentStudents.map(s => `
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:0.9rem; cursor:pointer;">
+          <input type="checkbox" name="absentStudents" value="${s.id}">
+          <span>${s.nombre}</span>
+        </label>
+      `).join('');
+
+      document.getElementById('classModal').style.display = 'flex';
+    }
+
+    function closeClassModal() {
+      document.getElementById('classModal').style.display = 'none';
+      document.getElementById('modalClassVideo').innerHTML = ''; // Detener video
+    }
+
+    document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const classId = document.getElementById('attendanceClassId').value;
+      const checkboxes = document.querySelectorAll('input[name="absentStudents"]:checked');
+      const absentIds = Array.from(checkboxes).map(cb => cb.value);
+
+      const res = await fetch('/api/paidagogo/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classId, absentStudentIds: absentIds })
+      });
+
+      if (res.ok) {
+        alert('Asistencia registrada exitosamente.');
+        closeClassModal();
+      }
+    });
 
     function openGradeModal(studentId = null) {
       if (studentId) document.getElementById('gradeStudentSelect').value = studentId;
@@ -240,8 +336,8 @@
       const payload = {
         studentId: document.getElementById('gradeStudentSelect').value,
         unidad: document.getElementById('gradeUnidad').value,
-        nota: document.getElementById('gradeNota').value,
-        asistencia: document.getElementById('gradeAsistencia').value,
+        puntajeObtenido: document.getElementById('gradeObtenido').value,
+        puntajeTotal: document.getElementById('gradeTotal').value,
         observaciones: document.getElementById('gradeObservaciones').value
       };
 

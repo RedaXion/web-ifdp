@@ -153,41 +153,23 @@
       document.getElementById('studentNameTitle').textContent = `Hola, ${user.nombre}`;
       if (user.nivel) document.getElementById('studentNivelSubtitle').textContent = user.nivel;
 
-      let data = { classes: [], grades: [] };
+      let data = { classes: [], grades: [], attendance: [] };
       try {
         const res = await fetch('/api/student/dashboard');
         if (res.ok) data = await res.json();
       } catch (e) {
-        // Mock data local
-        data = {
-          classes: [
-            {
-              id: 'c_1',
-              titulo: 'Clase 1: La Identidad del Hijo de Dios',
-              nivel: 'Nivel 1: Cimientos de la Fe',
-              youtubeId: 'dQw4w9WgXcQ',
-              pptUrl: '#',
-              descripcion: 'En esta lección comprendemos el fundamento del nuevo nacimiento y la adopción como hijos de Dios.'
-            },
-            {
-              id: 'c_2',
-              titulo: 'Clase 2: El Poder de la Oración Diaria',
-              nivel: 'Nivel 1: Cimientos de la Fe',
-              youtubeId: 'dQw4w9WgXcQ',
-              pptUrl: '#',
-              descripcion: 'Cómo cultivar una vida íntima de oración diaria y comunión profunda con el Espíritu Santo.'
-            }
-          ],
-          grades: [
-            { unidad: 'Módulo 1 - Fundamentos', nota: 6.8, asistencia: '95%', observaciones: 'Excelente participación y compromiso en clases.' },
-            { unidad: 'Módulo 2 - Oración y Ayuno', nota: 7.0, asistencia: '100%', observaciones: 'Desempeño impecable.' }
-          ]
-        };
+        data = { classes: [], grades: [], attendance: [] };
       }
 
-      // Render Clases
+      let zoomLink = 'https://us06web.zoom.us/j/84648640655?pwd=vVix5PRmxa6LBkCOVB3aJneT2iUPtT.1'; // Nivel 1 & 2
+      if(user.nivel && user.nivel.includes('Nivel 3')) {
+        zoomLink = 'https://us06web.zoom.us/j/88054596656?pwd=Ces8EsjuxL5zufNdhrsiu7XPMScumH.1';
+      }
+
+      // Render Clases (reverse chronological)
       const classesDiv = document.getElementById('classesList');
-      classesDiv.innerHTML = data.classes.map(c => `
+      const sortedClasses = (data.classes || []).slice().reverse();
+      classesDiv.innerHTML = sortedClasses.map(c => `
         <div class="class-card">
           <div class="video-container">
             <iframe src="https://www.youtube.com/embed/${c.youtubeId}" allowfullscreen></iframe>
@@ -196,29 +178,46 @@
             <span style="font-size:0.8rem; font-weight:700; color:var(--accent-orange); text-transform:uppercase;">${c.nivel}</span>
             <h3 style="margin: 6px 0 10px 0;">${c.titulo}</h3>
             <p style="font-size:0.95rem; margin-bottom: 16px;">${c.descripcion}</p>
-            ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank" class="btn btn-outline" style="padding:8px 16px; font-size:0.85rem;"><i class="ri-file-ppt-2-line text-orange"></i> Descargar Presentación PPT</a>` : ''}
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <a href="${zoomLink}" target="_blank" class="btn btn-primary" style="background:#0284C7; font-size:0.85rem;"><i class="ri-vidicon-line"></i> Unirse a Zoom en Vivo</a>
+              ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank" class="btn btn-outline" style="font-size:0.85rem;"><i class="ri-file-ppt-2-line text-orange"></i> Ver PPT</a>` : ''}
+            </div>
           </div>
         </div>
       `).join('');
 
-      // Render Notas
+      // Render Notas y Asistencia
       const gradesDiv = document.getElementById('gradesContainer');
-      if (data.grades.length === 0) {
-        gradesDiv.innerHTML = '<p>Aún no hay calificaciones registradas.</p>';
+      const totalAtt = data.attendance ? data.attendance.length : 0;
+      const presentAtt = data.attendance ? data.attendance.filter(a => a.status === 'presente').length : 0;
+      const attPercent = totalAtt > 0 ? Math.round((presentAtt / totalAtt) * 100) + '%' : 'N/A';
+
+      if (!data.grades || data.grades.length === 0) {
+        gradesDiv.innerHTML = `
+          <div style="text-align:center; padding-bottom: 20px; margin-bottom: 20px;">
+            <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">ASISTENCIA GENERAL</div>
+            <div class="grade-badge" style="color:#0284C7;">${attPercent}</div>
+          </div>
+          <p>Aún no hay calificaciones registradas.</p>`;
       } else {
         const avg = (data.grades.reduce((acc, g) => acc + g.nota, 0) / data.grades.length).toFixed(1);
         gradesDiv.innerHTML = `
-          <div style="text-align:center; padding-bottom: 20px; border-bottom: 1px solid var(--border-light); margin-bottom: 20px;">
-            <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">PROMEDIO GENERAL</div>
-            <div class="grade-badge">${avg}</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center; padding-bottom: 20px; border-bottom: 1px solid var(--border-light); margin-bottom: 20px;">
+            <div>
+              <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">PROMEDIO</div>
+              <div class="grade-badge">${avg}</div>
+            </div>
+            <div>
+              <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">ASISTENCIA</div>
+              <div class="grade-badge" style="color:#0284C7;">${attPercent}</div>
+            </div>
           </div>
           ${data.grades.map(g => `
             <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed var(--border-light);">
               <div style="display:flex; justify-content:space-between; font-weight:700;">
                 <span>${g.unidad}</span>
-                <span style="color:var(--accent-orange); font-size:1.1rem;">${g.nota}</span>
+                <span style="color:var(--accent-orange); font-size:1.1rem;">${g.nota} <span style="font-size:0.8rem; color:var(--text-secondary);">(${g.porcentaje}%)</span></span>
               </div>
-              <div style="font-size:0.85rem; color:var(--text-secondary); margin-top: 4px;">Asistencia: ${g.asistencia}</div>
               ${g.observaciones ? `<div style="font-size:0.85rem; font-style:italic; margin-top:4px;">"${g.observaciones}"</div>` : ''}
             </div>
           `).join('')}

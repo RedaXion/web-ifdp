@@ -93,6 +93,73 @@
           <div id="adminUsersList"></div>
         </div>
 
+      <div class="admin-grid" style="margin-top: 30px;">
+        
+        <!-- Panel de Notas (Evaluaciones) -->
+        <div class="admin-card">
+          <h3 style="margin-bottom: 20px;"><i class="ri-file-chart-line text-orange"></i> Gestión de Evaluaciones</h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom: 15px;">Selecciona una evaluación para editar su calificación o ingresa una nueva.</p>
+          <div id="adminGradesList"></div>
+        </div>
+
+        <!-- Panel de Asistencia -->
+        <div class="admin-card">
+          <h3 style="margin-bottom: 20px;"><i class="ri-calendar-check-line text-orange"></i> Registro de Asistencia</h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom: 15px;">Modifica la asistencia de los estudiantes por clase.</p>
+          <div id="adminAttendanceList"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MODAL EDITAR NOTA ADMIN -->
+    <div id="editGradeModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:480px;">
+        <h3 style="margin-bottom: 20px;">Editar Calificación</h3>
+        <form id="editGradeForm">
+          <input type="hidden" id="editGradeId">
+          <div class="form-group">
+            <label>Unidad / Módulo</label>
+            <input type="text" id="editGradeUnidad" required>
+          </div>
+          <div class="form-group">
+            <label>Puntaje Obtenido</label>
+            <input type="number" step="0.5" id="editGradeObtenido" required>
+          </div>
+          <div class="form-group">
+            <label>Puntaje Total</label>
+            <input type="number" step="0.5" id="editGradeTotal" required>
+          </div>
+          <div class="form-group">
+            <label>Observaciones</label>
+            <textarea id="editGradeObservaciones" rows="2"></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeEditGradeModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0F172A;">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL EDITAR ASISTENCIA ADMIN -->
+    <div id="editAttendanceModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:400px;">
+        <h3 style="margin-bottom: 20px;">Modificar Asistencia</h3>
+        <form id="editAttendanceForm">
+          <input type="hidden" id="editAttId">
+          <div class="form-group">
+            <label>Estado</label>
+            <select id="editAttStatus" required>
+              <option value="presente">Presente</option>
+              <option value="ausente">Ausente</option>
+            </select>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeEditAttendanceModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0F172A;">Guardar Asistencia</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -114,8 +181,12 @@
             <input type="url" id="classYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." required>
           </div>
           <div class="form-group">
-            <label>Enlace del PPT / Documento Complementario</label>
+            <label>Enlace del PPT / Presentación</label>
             <input type="url" id="classPptUrl" placeholder="https://drive.google.com/... o enlace PDF/PPT">
+          </div>
+          <div class="form-group">
+            <label>Enlace del Apunte (Para el Paidagogo)</label>
+            <input type="url" id="classApunteUrl" placeholder="https://drive.google.com/... o enlace PDF">
           </div>
           <div class="form-group">
             <label>Descripción / Resumen de la Clase</label>
@@ -256,7 +327,8 @@
           <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 8px 0;">${c.descripcion}</p>
           <div style="font-size:0.8rem;">
             🎥 <strong>YouTube:</strong> <a href="${c.youtubeUrl}" target="_blank">${c.youtubeUrl}</a><br>
-            📄 <strong>PPT:</strong> ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank">Ver Archivo PPT</a>` : 'Sin archivo adjunto'}
+            📄 <strong>PPT:</strong> ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank">Ver Archivo PPT</a>` : 'Sin archivo adjunto'}<br>
+            📝 <strong>Apunte:</strong> ${c.apunteUrl ? `<a href="${c.apunteUrl}" target="_blank">Ver Apunte PDF</a>` : 'Sin apunte'}
           </div>
         </div>
       `).join('');
@@ -267,12 +339,52 @@
           <div>
             <strong>${u.nombre}</strong> (@${u.username})<br>
             <span style="font-size:0.8rem; color:var(--text-muted);">${u.email}</span>
+            ${u.role === 'student' ? `<div style="font-size:0.75rem; margin-top:4px;"><strong>Promedio:</strong> ${u.avgGrade || 'N/A'} | <strong>Asistencia:</strong> ${u.avgAttendance || 'N/A'}</div>` : ''}
           </div>
-          <div>
+          <div style="display:flex; align-items:center; gap:10px;">
             <span class="badge-role role-${u.role}">${u.role}</span>
+            <button onclick="deleteUser('${u.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer;" title="Eliminar"><i class="ri-delete-bin-line"></i></button>
           </div>
         </div>
       `).join('');
+
+      // Render Grades
+      if(data.grades) {
+        document.getElementById('adminGradesList').innerHTML = data.grades.map(g => {
+          const student = data.users.find(u => u.id === g.studentId);
+          const studentName = student ? student.nombre : 'Desconocido';
+          return `
+          <div style="padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong>${g.unidad}</strong> - <span style="color:var(--accent-orange); font-weight:700;">${g.nota}</span> (${g.porcentaje}%)<br>
+              <span style="font-size:0.8rem; color:var(--text-secondary);">Estudiante: ${studentName}</span>
+            </div>
+            <button onclick="openEditGradeModal('${g.id}', '${g.unidad}', ${g.puntajeObtenido}, ${g.puntajeTotal}, '${g.observaciones || ''}')" class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;">Editar</button>
+          </div>
+        `}).join('');
+      }
+
+      // Render Attendance
+      if(data.attendance) {
+        document.getElementById('adminAttendanceList').innerHTML = data.attendance.map(a => {
+          const student = data.users.find(u => u.id === a.studentId);
+          const c = data.classes.find(cl => cl.id === a.classId);
+          const studentName = student ? student.nombre : 'Desconocido';
+          const className = c ? c.titulo : 'Clase';
+          const badgeColor = a.status === 'presente' ? 'background:#E0F2FE; color:#0284C7;' : 'background:#FEE2E2; color:#DC2626;';
+          return `
+          <div style="padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong>${studentName}</strong><br>
+              <span style="font-size:0.8rem; color:var(--text-secondary);">${className}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase; ${badgeColor}">${a.status}</span>
+              <button onclick="openEditAttendanceModal('${a.id}', '${a.status}')" class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;">Editar</button>
+            </div>
+          </div>
+        `}).join('');
+      }
     }
 
     function openClassModal() { document.getElementById('classModal').style.display = 'flex'; }
@@ -287,6 +399,7 @@
         nivel: document.getElementById('classNivel').value,
         youtubeUrl: document.getElementById('classYoutubeUrl').value,
         pptUrl: document.getElementById('classPptUrl').value,
+        apunteUrl: document.getElementById('classApunteUrl').value,
         descripcion: document.getElementById('classDescripcion').value
       };
       const res = await fetch('/api/admin/classes', {
@@ -313,6 +426,58 @@
         body: JSON.stringify(payload)
       });
       if (res.ok) { closeUserModal(); loadOverview(); }
+    });
+
+    async function deleteUser(id) {
+      if(!confirm('¿Estás seguro de eliminar este usuario?')) return;
+      const res = await fetch('/api/admin/users/' + id, { method: 'DELETE' });
+      if(res.ok) loadOverview();
+    }
+
+    function openEditGradeModal(id, unidad, obtenido, total, obs) {
+      document.getElementById('editGradeId').value = id;
+      document.getElementById('editGradeUnidad').value = unidad;
+      document.getElementById('editGradeObtenido').value = obtenido;
+      document.getElementById('editGradeTotal').value = total;
+      document.getElementById('editGradeObservaciones').value = obs;
+      document.getElementById('editGradeModal').style.display = 'flex';
+    }
+    function closeEditGradeModal() { document.getElementById('editGradeModal').style.display = 'none'; }
+
+    document.getElementById('editGradeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editGradeId').value;
+      const payload = {
+        unidad: document.getElementById('editGradeUnidad').value,
+        puntajeObtenido: document.getElementById('editGradeObtenido').value,
+        puntajeTotal: document.getElementById('editGradeTotal').value,
+        observaciones: document.getElementById('editGradeObservaciones').value
+      };
+      const res = await fetch('/api/paidagogo/grades/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if(res.ok) { closeEditGradeModal(); loadOverview(); }
+    });
+
+    function openEditAttendanceModal(id, status) {
+      document.getElementById('editAttId').value = id;
+      document.getElementById('editAttStatus').value = status;
+      document.getElementById('editAttendanceModal').style.display = 'flex';
+    }
+    function closeEditAttendanceModal() { document.getElementById('editAttendanceModal').style.display = 'none'; }
+
+    document.getElementById('editAttendanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editAttId').value;
+      const status = document.getElementById('editAttStatus').value;
+      const res = await fetch('/api/admin/attendance/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if(res.ok) { closeEditAttendanceModal(); loadOverview(); }
     });
 
     async function logout() {

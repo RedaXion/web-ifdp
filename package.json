@@ -12,9 +12,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "express-session": "^1.18.0"
+    "express-session": "^1.18.0",
+    "pg": "^8.23.0"
   },
-  "keywords": ["iglesia", "familias-de-paz", "discipulado"],
+  "keywords": [
+    "iglesia",
+    "familias-de-paz",
+    "discipulado"
+  ],
   "author": "Christopher Rodríguez",
   "license": "ISC"
 }
