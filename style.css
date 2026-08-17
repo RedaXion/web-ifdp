@@ -250,12 +250,12 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 80px;
+  height: 100px;
   transition: height var(--transition-fast);
 }
 
 .header.scrolled .nav-container {
-  height: 68px;
+  height: 80px;
 }
 
 .logo-link {
@@ -264,18 +264,18 @@ p {
 }
 
 .header-logo-img {
-  height: 60px;
+  height: 80px;
   width: auto;
   object-fit: contain;
   transition: height var(--transition-fast);
 }
 
 .header.scrolled .header-logo-img {
-  height: 48px;
+  height: 64px;
 }
 
 .footer-logo-img {
-  height: 80px;
+  height: 140px;
   width: auto;
   object-fit: contain;
 }
@@ -1374,6 +1374,7 @@ p {
 .icon-phone { background: var(--accent-orange); }
 .icon-insta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
 .icon-yt { background: #FF0000; }
+.icon-tiktok { background: #010101; }
 
 .contact-card-title {
   font-size: 1.1rem;
