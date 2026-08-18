@@ -116,7 +116,9 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
   const userId = req.query.studentId || req.session.user.id;
   try {
     const studentRes = await pool.query('SELECT id, nombre, nivel FROM users WHERE id = $1', [userId]);
-    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
+    const studentNivel = studentRes.rows[0]?.nivel;
+    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
+    const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const gradesRes = await pool.query(`
       SELECT g.id, g.student_id as "studentId", e.titulo as unidad, g.puntaje_obtenido as "puntajeObtenido", e.puntaje_total as "puntajeTotal", g.nota, g.porcentaje, g.observaciones 
       FROM grades g JOIN evaluations e ON g.evaluation_id = e.id 
@@ -127,6 +129,7 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
     res.json({
       student: studentRes.rows.length > 0 ? studentRes.rows[0] : null,
       classes: classesRes.rows,
+      evaluations: evalRes.rows,
       grades: gradesRes.rows.map(g => ({...g, nota: parseFloat(g.nota)})),
       attendance: attRes.rows
     });
@@ -158,6 +161,7 @@ app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req,
     res.status(500).json({ error: 'Error del servidor' });
   }
 });
+
 
 app.post('/api/paidagogo/grades', authRole(['paidagogo', 'admin']), async (req, res) => {
   const { studentId, unidad, puntajeObtenido, puntajeTotal, observaciones } = req.body;
@@ -239,9 +243,9 @@ app.post('/api/paidagogo/attendance', authRole(['paidagogo', 'admin']), async (r
     await pool.query('DELETE FROM attendance WHERE class_id = $1', [classId]);
     
     // Obtener estudiantes del mismo nivel que el pedagogo
-    const nivelId = req.session.user.nivel; // nivel_id almacenado en sesión
+    const nivelId = req.session.user.nivel; 
     const studentsRes = await pool.query(
-      "SELECT id FROM users WHERE role = 'student' AND nivel_id = $1",
+      "SELECT id FROM users WHERE role = 'student' AND nivel = $1",
       [nivelId]
     );
     const students = studentsRes.rows;
@@ -273,11 +277,13 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
     `);
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance');
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
+    const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations ORDER BY created_at ASC');
     const noaRes = await pool.query('SELECT id, pedagogo_id as "pedagogoId", evaluacion_id as "evaluacionId", archivo_url as "archivoUrl", fecha_subida as "fechaSubida" FROM nota_noa');
 
     const grades = gradesRes.rows.map(g => ({...g, nota: parseFloat(g.nota)}));
     const attendance = attRes.rows;
     const noas = noaRes.rows;
+    const evaluations = evalRes.rows;
 
     const usersWithStats = usersRes.rows.map(u => {
       let uGrades = grades.filter(g => g.studentId === u.id);
@@ -292,6 +298,7 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
     res.json({
       users: usersWithStats,
       classes: classesRes.rows,
+      evaluations,
       grades,
       attendance,
       noas
@@ -339,6 +346,63 @@ app.post('/api/paidagogo/noa', authRole(['paidagogo', 'admin']), upload.single('
       [req.session.user.id, evaluacionId || null, url]
     );
     res.json({ success: true, url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+});
+
+app.post('/api/paidagogo/grades/batch', authRole(['paidagogo', 'admin']), upload.single('archivoNoa'), async (req, res) => {
+  try {
+    const { evaluacionId, unidad, puntajeTotal, gradesData } = req.body;
+    const pTotal = parseFloat(puntajeTotal);
+    const parsedGrades = JSON.parse(gradesData);
+    
+    for (const [studentId, puntajeObtenido] of Object.entries(parsedGrades)) {
+      if(puntajeObtenido === '') continue;
+      const pObtenido = parseFloat(puntajeObtenido);
+      const exigencia = pTotal * 0.6;
+      let nota = 1.0;
+      if (pObtenido < exigencia) {
+        nota = (pObtenido / exigencia) * 3 + 1;
+      } else {
+        nota = ((pObtenido - exigencia) / (pTotal * 0.4)) * 3 + 4;
+      }
+      nota = Math.round(nota * 10) / 10;
+      if(nota < 1.0) nota = 1.0; if(nota > 7.0) nota = 7.0;
+      const porcentaje = Math.round((pObtenido / pTotal) * 100);
+      const newId = 'g_' + Date.now() + '_' + studentId;
+      
+      await pool.query(
+        'INSERT INTO grades (id, student_id, unidad, puntaje_obtenido, puntaje_total, nota, porcentaje, observaciones) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        [newId, studentId, unidad, pObtenido, pTotal, nota, porcentaje, '']
+      );
+    }
+
+    if (req.file) {
+      const url = '/uploads/' + req.file.filename;
+      await pool.query(
+        'INSERT INTO nota_noa (pedagogo_id, evaluacion_id, archivo_url) VALUES ($1, $2, $3)',
+        [req.session.user.id, evaluacionId, url]
+      );
+    }
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// Crear evaluación
+app.post('/api/admin/evaluations', authRole(['admin']), async (req, res) => {
+  const { titulo, nivel, puntajeTotal } = req.body;
+  const newId = 'e_' + Date.now();
+  try {
+    await pool.query(
+      'INSERT INTO evaluations (id, titulo, nivel, puntaje_total) VALUES ($1, $2, $3, $4)',
+      [newId, titulo, nivel, puntajeTotal]
+    );
+    res.json({ success: true, id: newId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error' });

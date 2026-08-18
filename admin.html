@@ -75,6 +75,7 @@
         </div>
         <div>
           <button onclick="exportCSV()" class="btn btn-outline" style="margin-right: 10px; border-color: #0F172A; color: #0F172A;"><i class="ri-file-excel-2-line"></i> Exportar CSV</button>
+          <button onclick="openEvalModal()" class="btn btn-primary" style="margin-right: 10px; background: #ea580c; border-color: #ea580c;"><i class="ri-file-add-line"></i> + Crear Evaluación</button>
           <button onclick="openClassModal()" class="btn btn-primary"><i class="ri-video-add-line"></i> + Subir Nueva Clase</button>
           <button onclick="openUserModal()" class="btn btn-dark" style="margin-left: 10px;"><i class="ri-user-add-line"></i> + Crear Usuario</button>
         </div>
@@ -220,6 +221,35 @@
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
             <button type="button" onclick="closeClassModal()" class="btn btn-outline">Cancelar</button>
             <button type="submit" class="btn btn-primary">Publicar Clase</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL CREAR EVALUACION -->
+    <div id="evalModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:540px;">
+        <h3 style="margin-bottom: 20px;">Crear Nueva Evaluación</h3>
+        <form id="evalForm">
+          <div class="form-group">
+            <label>Título de la Evaluación</label>
+            <input type="text" id="evalTitulo" placeholder="Ej: Evaluación 1" required>
+          </div>
+          <div class="form-group">
+            <label>Nivel de Discipulado</label>
+            <select id="evalNivel" required>
+              <option value="Nivel 1: Corderitos">Nivel 1: Corderitos</option>
+              <option value="Nivel 2: Tekníon">Nivel 2: Tekníon</option>
+              <option value="Nivel 3: Neaniskos">Nivel 3: Neaniskos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Puntaje Total</label>
+            <input type="number" step="0.5" id="evalPuntajeTotal" placeholder="Ej: 30" required>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeEvalModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:#ea580c;">Crear Evaluación</button>
           </div>
         </form>
       </div>
@@ -460,6 +490,24 @@
     function closeClassModal() { document.getElementById('classModal').style.display = 'none'; }
     function openUserModal() { document.getElementById('userModal').style.display = 'flex'; }
     function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
+
+    function openEvalModal() { document.getElementById('evalModal').style.display = 'flex'; }
+    function closeEvalModal() { document.getElementById('evalModal').style.display = 'none'; }
+
+    document.getElementById('evalForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        titulo: document.getElementById('evalTitulo').value,
+        nivel: document.getElementById('evalNivel').value,
+        puntajeTotal: document.getElementById('evalPuntajeTotal').value
+      };
+      const res = await fetch('/api/admin/evaluations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) { closeEvalModal(); loadOverview(); }
+    });
 
     document.getElementById('classForm').addEventListener('submit', async (e) => {
       e.preventDefault();

@@ -169,6 +169,35 @@
       </div>
     </div>
 
+    <!-- MODAL EVALUACION -->
+    <div id="evalModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:600px; max-height:90vh; overflow-y:auto;">
+        <h3 id="modalEvalTitle" style="margin-bottom: 10px;"></h3>
+        <p id="modalEvalDesc" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px;"></p>
+        
+        <form id="evalGradesForm" enctype="multipart/form-data">
+          <input type="hidden" id="evalGradesId">
+          <input type="hidden" id="evalGradesTotal">
+          
+          <div style="margin-bottom:20px;">
+            <h4 style="margin-bottom:10px;"><i class="ri-file-chart-line text-blue"></i> Ingreso de Notas (Puntaje Obtenido)</h4>
+            <div id="evalStudentsList" style="max-height:250px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:var(--radius-sm); margin-bottom:15px;"></div>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <h4 style="margin-bottom:10px;"><i class="ri-file-upload-line text-orange"></i> Subir Archivo Físico NOA</h4>
+            <input type="file" id="evalNoaFile" name="archivoNoa" accept=".pdf,image/*" style="width:100%; padding:8px; border:1px solid var(--border-light); border-radius:4px;">
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Opcional. Sube la foto o PDF de las notas físicas para esta evaluación.</p>
+          </div>
+          
+          <div style="display:flex; justify-content:flex-end; gap:12px;">
+            <button type="button" onclick="closeEvalModal()" class="btn btn-outline">Cerrar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Todo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </main>
 
   <script>
@@ -224,13 +253,16 @@
       loadStudents();
     }
 
+    let allEvaluations = [];
+
     async function loadStudents() {
-      // Load classes
+      // Load classes and evaluations
       try {
         const resClasses = await fetch('/api/student/dashboard');
         if (resClasses.ok) {
           const classData = await resClasses.json();
           allClasses = (classData.classes || []).reverse(); // latest first
+          allEvaluations = (classData.evaluations || []).reverse();
         }
       } catch (e) { console.error(e); }
 
@@ -242,15 +274,30 @@
         currentStudents = [];
       }
 
-      // Render Classes Grid
+      // Render Classes and Evaluations Grid
       const classesDiv = document.getElementById('classesList');
-      classesDiv.innerHTML = allClasses.map(c => `
-        <div style="background:white; border:1px solid var(--border-light); border-radius:var(--radius-md); padding:16px; margin-bottom:16px; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'" onclick="openClassModal('${c.id}')">
-          <span style="font-size:0.75rem; background:rgba(2,132,199,0.1); color:#0284C7; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${c.nivel}</span>
+      let html = '';
+      
+      allEvaluations.forEach(e => {
+        html += `
+        <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-left:4px solid var(--accent-orange); border-radius:var(--radius-md); padding:16px; margin-bottom:16px; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'" onclick="openEvalModal('${e.id}')">
+          <span style="font-size:0.75rem; background:#FFEDD5; color:var(--accent-orange); font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">EVALUACIÓN</span>
+          <h4 style="margin:8px 0;">${e.titulo}</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin:0;">Puntaje Total: ${e.puntajeTotal}</p>
+        </div>
+        `;
+      });
+
+      allClasses.forEach(c => {
+        html += `
+        <div style="background:white; border:1px solid var(--border-light); border-left:4px solid #0284C7; border-radius:var(--radius-md); padding:16px; margin-bottom:16px; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'" onclick="openClassModal('${c.id}')">
+          <span style="font-size:0.75rem; background:rgba(2,132,199,0.1); color:#0284C7; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">CLASE</span>
           <h4 style="margin:8px 0;">${c.titulo}</h4>
           <p style="font-size:0.85rem; color:var(--text-secondary); margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${c.descripcion}</p>
         </div>
-      `).join('');
+        `;
+      });
+      classesDiv.innerHTML = html;
 
       const tbody = document.getElementById('studentsTableBody');
       const select = document.getElementById('gradeStudentSelect');
@@ -303,6 +350,65 @@
       document.getElementById('classModal').style.display = 'none';
       document.getElementById('modalClassVideo').innerHTML = ''; // Detener video
     }
+
+    function openEvalModal(evalId) {
+      const e = allEvaluations.find(x => x.id === evalId);
+      if(!e) return;
+      document.getElementById('modalEvalTitle').textContent = e.titulo;
+      document.getElementById('modalEvalDesc').textContent = `Ingresa el puntaje obtenido por cada estudiante. El puntaje total es ${e.puntajeTotal}.`;
+      document.getElementById('evalGradesId').value = evalId;
+      document.getElementById('evalGradesTotal').value = e.puntajeTotal;
+      
+      const listDiv = document.getElementById('evalStudentsList');
+      listDiv.innerHTML = currentStudents.map(s => `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:0.9rem; font-weight:600;">${s.nombre}</span>
+          <input type="number" step="0.5" class="grade-input" data-studentid="${s.id}" placeholder="Nota" style="width:80px; padding:4px 8px; border:1px solid var(--border-light); border-radius:4px;">
+        </div>
+      `).join('');
+      document.getElementById('evalModal').style.display = 'flex';
+    }
+
+    function closeEvalModal() {
+      document.getElementById('evalModal').style.display = 'none';
+    }
+
+    document.getElementById('evalGradesForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const evalId = document.getElementById('evalGradesId').value;
+      const evalTotal = document.getElementById('evalGradesTotal').value;
+      const evaluation = allEvaluations.find(x => x.id === evalId);
+      const inputs = document.querySelectorAll('.grade-input');
+      const gradesData = {};
+      inputs.forEach(input => {
+        if (input.value.trim() !== '') {
+          gradesData[input.getAttribute('data-studentid')] = input.value;
+        }
+      });
+
+      const formData = new FormData();
+      formData.append('evaluacionId', evalId);
+      formData.append('unidad', evaluation ? evaluation.titulo : 'Evaluación');
+      formData.append('puntajeTotal', evalTotal);
+      formData.append('gradesData', JSON.stringify(gradesData));
+
+      const fileInput = document.getElementById('evalNoaFile');
+      if (fileInput.files.length > 0) {
+        formData.append('archivoNoa', fileInput.files[0]);
+      }
+
+      const res = await fetch('/api/paidagogo/grades/batch', {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        alert('Notas y NOA guardados exitosamente.');
+        closeEvalModal();
+        loadStudents();
+      } else {
+        alert('Ocurrió un error al guardar.');
+      }
+    });
 
     document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
       e.preventDefault();
