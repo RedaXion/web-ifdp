@@ -73,11 +73,11 @@
           <span class="section-badge"><i class="ri-settings-4-line"></i> Dashboard de Administración</span>
           <h2>Gestión de Clases, Contenidos & Usuarios</h2>
         </div>
-        <div>
-          <button onclick="exportCSV()" class="btn btn-outline" style="margin-right: 10px; border-color: #0F172A; color: #0F172A;"><i class="ri-file-excel-2-line"></i> Exportar CSV</button>
-          <button onclick="openEvalModal()" class="btn btn-primary" style="margin-right: 10px; background: #ea580c; border-color: #ea580c;"><i class="ri-file-add-line"></i> + Crear Evaluación</button>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+          <button onclick="exportCSV()" class="btn btn-outline" style="border-color: #0F172A; color: #0F172A;"><i class="ri-file-excel-2-line"></i> Exportar CSV</button>
+          <button onclick="openEvalModal()" class="btn btn-primary" style="background: #ea580c; border-color: #ea580c;"><i class="ri-file-add-line"></i> + Crear Evaluación</button>
           <button onclick="openClassModal()" class="btn btn-primary"><i class="ri-video-add-line"></i> + Subir Nueva Clase</button>
-          <button onclick="openUserModal()" class="btn btn-dark" style="margin-left: 10px;"><i class="ri-user-add-line"></i> + Crear Usuario</button>
+          <button onclick="openUserModal()" class="btn btn-dark"><i class="ri-user-add-line"></i> + Crear Usuario</button>
         </div>
       </div>
 
@@ -335,7 +335,7 @@
         }
       } catch (e) {
         if (username === 'admin' && password === 'admin123') {
-          showDashboard({ id: 'u_admin_1', nombre: 'Pastor Christopher Rodríguez', role: 'admin' });
+          showDashboard({ id: 'u_admin_1', nombre: 'Director Escuela Discipulado Christopher RodVal', role: 'admin' });
         } else {
           document.getElementById('loginError').textContent = 'Credenciales inválidas. Usa admin / admin123';
           document.getElementById('loginError').style.display = 'block';
@@ -360,7 +360,7 @@
       } catch (e) {
         data = {
           users: [
-            { id: 'u_admin_1', nombre: 'Pastor Christopher Rodríguez', username: 'admin', email: 'admin@ifdp.cl', role: 'admin' },
+            { id: 'u_admin_1', nombre: 'Director Escuela Discipulado Christopher RodVal', username: 'admin', email: 'admin@ifdp.cl', role: 'admin' },
             { id: 'u_paidagogo_1', nombre: 'Paidagogo Juan Pérez', username: 'paidagogo1', email: 'juan@ifdp.cl', role: 'paidagogo' },
             { id: 'u_student_1', nombre: 'María González', username: 'alumno1', email: 'maria@gmail.com', role: 'student' }
           ],

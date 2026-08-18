@@ -120,9 +120,9 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const gradesRes = await pool.query(`
-      SELECT g.id, g.student_id as "studentId", e.titulo as unidad, g.puntaje_obtenido as "puntajeObtenido", e.puntaje_total as "puntajeTotal", g.nota, g.porcentaje, g.observaciones 
-      FROM grades g JOIN evaluations e ON g.evaluation_id = e.id 
-      WHERE g.student_id = $1
+      SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
+      FROM grades 
+      WHERE student_id = $1
     `, [userId]);
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance WHERE student_id = $1', [userId]);
 
@@ -146,8 +146,8 @@ app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req,
   try {
     const studentsRes = await pool.query('SELECT id, nombre, username, email, role, nivel FROM users WHERE role = $1', ['student']);
     const gradesRes = await pool.query(`
-      SELECT g.id, g.student_id as "studentId", e.titulo as unidad, g.puntaje_obtenido as "puntajeObtenido", e.puntaje_total as "puntajeTotal", g.nota, g.porcentaje, g.observaciones 
-      FROM grades g JOIN evaluations e ON g.evaluation_id = e.id
+      SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
+      FROM grades
     `);
 
     const studentsWithGrades = studentsRes.rows.map(s => ({
@@ -272,8 +272,8 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
   try {
     const usersRes = await pool.query('SELECT id, username, nombre, email, role, nivel FROM users');
     const gradesRes = await pool.query(`
-      SELECT g.id, g.student_id as "studentId", e.titulo as unidad, g.puntaje_obtenido as "puntajeObtenido", e.puntaje_total as "puntajeTotal", g.nota, g.porcentaje, g.observaciones 
-      FROM grades g JOIN evaluations e ON g.evaluation_id = e.id
+      SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
+      FROM grades
     `);
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance');
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');

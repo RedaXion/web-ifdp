@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS attendance (
 
 -- Inserción de usuario administrador por defecto si no existe
 INSERT INTO users (id, nombre, username, password_hash, role, nivel)
-VALUES ('u_admin_1', 'Pastor Christopher Rodríguez', 'admin', '$2a$10$eDMfTFgVUa33odqN2SGvnusyAsfdl47uVGB88f2nK9FkaL8JBn3S6', 'admin', 'Admin')
+VALUES ('u_admin_1', 'Director Escuela Discipulado Christopher RodVal', 'admin', '$2a$10$eDMfTFgVUa33odqN2SGvnusyAsfdl47uVGB88f2nK9FkaL8JBn3S6', 'admin', 'Admin')
 ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;
 
 -- Inserción de un paidagogo por defecto si no existe
@@ -66,3 +66,6 @@ CREATE TABLE IF NOT EXISTS nota_noa (
     archivo_url TEXT NOT NULL,
     fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE grades ADD COLUMN IF NOT EXISTS unidad VARCHAR(150);
+ALTER TABLE grades ADD COLUMN IF NOT EXISTS puntaje_total NUMERIC(5, 2);
