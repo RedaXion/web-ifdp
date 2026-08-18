@@ -491,6 +491,26 @@ app.post('/api/admin/classes', authRole(['admin']), async (req, res) => {
   }
 });
 
+app.delete('/api/admin/classes/:id', authRole(['admin']), async (req, res) => {
+  try {
+    await pool.query('DELETE FROM classes WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+app.delete('/api/admin/evaluations/:id', authRole(['admin']), async (req, res) => {
+  try {
+    await pool.query('DELETE FROM evaluations WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
 // Rutas de Páginas HTML para Discipulado
 app.get('/discipulado', (req, res) => {
   res.sendFile(path.join(__dirname, 'discipulado.html'));
