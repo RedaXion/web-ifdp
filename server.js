@@ -116,7 +116,9 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
   const userId = req.query.studentId || req.session.user.id;
   try {
     const studentRes = await pool.query('SELECT id, nombre, nivel FROM users WHERE id = $1', [userId]);
-    const studentNivel = studentRes.rows[0]?.nivel;
+    // Para paidagogos: filtrar por su propio nivel, no por el del estudiante buscado
+    const callerNivel = req.session.user.nivel;
+    const studentNivel = (req.session.user.role === 'paidagogo') ? callerNivel : studentRes.rows[0]?.nivel;
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const gradesRes = await pool.query(`
@@ -144,7 +146,21 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
 // --------------------------------------------------------------------------
 app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req, res) => {
   try {
-    const studentsRes = await pool.query('SELECT id, nombre, username, email, role, nivel FROM users WHERE role = $1', ['student']);
+    // Filtrar por nivel del paidagogo (admin ve todo)
+    const isSuper = req.session.user.email && req.session.user.email.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase();
+    const isAdmin = req.session.user.role === 'admin' || isSuper;
+    const userNivel = req.session.user.nivel;
+
+    let studentsQuery, queryParams;
+    if (isAdmin) {
+      studentsQuery = 'SELECT id, nombre, username, email, role, nivel FROM users WHERE role = $1 ORDER BY nivel, nombre';
+      queryParams = ['student'];
+    } else {
+      studentsQuery = 'SELECT id, nombre, username, email, role, nivel FROM users WHERE role = $1 AND nivel = $2 ORDER BY nombre';
+      queryParams = ['student', userNivel];
+    }
+
+    const studentsRes = await pool.query(studentsQuery, queryParams);
     const gradesRes = await pool.query(`
       SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
       FROM grades
