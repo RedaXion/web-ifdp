@@ -111,8 +111,8 @@
         <!-- Panel de Notas (Evaluaciones) -->
         <div class="admin-card">
           <h3 style="margin-bottom: 20px;"><i class="ri-file-chart-line text-orange"></i> Gestión de Evaluaciones</h3>
-          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom: 15px;">Selecciona una evaluación para editar su calificación o ingresa una nueva.</p>
-          <div id="adminGradesList"></div>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom: 15px;">Selecciona una evaluación para ver y modificar las notas de los estudiantes.</p>
+          <div id="adminEvaluationsList"></div>
         </div>
 
         <!-- Panel de Asistencia -->
@@ -124,18 +124,71 @@
 
       </div>
 
-      <div class="admin-grid" style="margin-top: 30px;">
-        <!-- Panel de Archivos NOA -->
-        <div class="admin-card" style="grid-column: 1 / -1;">
-          <h3 style="margin-bottom: 20px;"><i class="ri-file-copy-2-line text-orange"></i> Archivos Físicos (NOA) Subidos</h3>
-          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom: 15px;">Archivos de calificaciones físicas subidos por los pedagogos.</p>
-          <div id="adminNoaList"></div>
+
+    </div>
+
+    <!-- MODAL DETALLE EVALUACION ADMIN -->
+    <div id="adminEvalDetailModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:600px; max-height:85vh; overflow-y:auto;">
+        <h3 id="adminEvalDetailTitle" style="margin-bottom: 20px;">Detalle de Evaluación</h3>
+        <p id="adminEvalDetailDesc" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;"></p>
+        <div id="adminEvalDetailTable" style="margin-bottom:20px;"></div>
+        <div style="display:flex; justify-content:flex-end;">
+          <button type="button" onclick="closeAdminEvalDetailModal()" class="btn btn-outline">Cerrar</button>
         </div>
       </div>
     </div>
 
-    <!-- MODAL EDITAR NOTA ADMIN -->
-    <div id="editGradeModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+    <!-- MODAL DETALLE USUARIO ADMIN -->
+    <div id="adminUserDetailModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:600px; max-height:85vh; overflow-y:auto;">
+        <h3 id="adminUserDetailTitle" style="margin-bottom: 5px;">Detalle del Usuario</h3>
+        <p id="adminUserDetailDesc" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:20px;"></p>
+        
+        <h4 style="margin-bottom:10px;"><i class="ri-calendar-check-line text-blue"></i> Asistencia</h4>
+        <div id="adminUserAttendanceTable" style="margin-bottom:20px;"></div>
+        
+        <h4 style="margin-bottom:10px;"><i class="ri-file-chart-line text-orange"></i> Calificaciones</h4>
+        <div id="adminUserGradesTable" style="margin-bottom:20px;"></div>
+        
+        <div style="display:flex; justify-content:flex-end;">
+          <button type="button" onclick="closeAdminUserDetailModal()" class="btn btn-outline">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL ASISTENCIA CLASE ADMIN -->
+    <div id="adminAttDetailModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:600px; max-height:85vh; overflow-y:auto;">
+        <h3 id="adminAttDetailTitle" style="margin-bottom: 20px;">Registro de Asistencia</h3>
+        <p id="adminAttDetailDesc" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;"></p>
+        <div id="adminAttDetailTable" style="margin-bottom:20px;"></div>
+        <div style="display:flex; justify-content:flex-end;">
+          <button type="button" onclick="closeAdminAttDetailModal()" class="btn btn-outline">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DETALLE CLASE ADMIN -->
+    <div id="adminClassDetailModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:640px; max-height:90vh; overflow-y:auto;">
+        <h3 id="adminClassDetailTitle" style="margin-bottom: 10px;"></h3>
+        <p id="adminClassDetailDesc" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px;"></p>
+        
+        <div style="margin-bottom:20px;">
+          <div id="adminClassVideo" style="position:relative; padding-bottom:56.25%; height:0; border-radius:8px; overflow:hidden;"></div>
+        </div>
+
+        <div id="adminClassLinks" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;"></div>
+        
+        <div style="display:flex; justify-content:flex-end;">
+          <button type="button" onclick="closeAdminClassDetailModal()" class="btn btn-outline">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL EDITAR NOTA ADMIN (Individual) -->
+    <div id="editGradeModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2010;">
       <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:480px;">
         <h3 style="margin-bottom: 20px;">Editar Calificación</h3>
         <form id="editGradeForm">
@@ -352,13 +405,14 @@
       loadOverview();
     }
 
+    let adminData = { users: [], classes: [], evaluations: [], grades: [], attendance: [], noas: [] };
+
     async function loadOverview() {
-      let data = { users: [], classes: [] };
       try {
         const res = await fetch('/api/admin/overview');
-        if (res.ok) data = await res.json();
+        if (res.ok) adminData = await res.json();
       } catch (e) {
-        data = {
+        adminData = {
           users: [
             { id: 'u_admin_1', nombre: 'Director Escuela Discipulado Christopher RodVal', username: 'admin', email: 'admin@ifdp.cl', role: 'admin' },
             { id: 'u_paidagogo_1', nombre: 'Paidagogo Juan Pérez', username: 'paidagogo1', email: 'juan@ifdp.cl', role: 'paidagogo' },
@@ -372,9 +426,12 @@
               youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
               pptUrl: 'https://example.com/ppt1.pdf'
             }
-          ]
+          ],
+          evaluations: [], grades: [], attendance: [], noas: []
         };
       }
+
+      const data = adminData;
 
       const filterVal = document.getElementById('adminLevelFilter') ? document.getElementById('adminLevelFilter').value : '';
       const filterNivelText = filterVal === '1' ? 'Nivel 1: Corderitos' : 
@@ -386,23 +443,18 @@
 
       // Render Classes
       document.getElementById('adminClassesList').innerHTML = filteredClasses.map(c => `
-        <div style="padding:14px; border-bottom:1px solid var(--border-light); margin-bottom:10px;">
+        <div style="background:#EFF6FF; border:1px solid #DBEAFE; border-left:4px solid #2563EB; border-radius:var(--radius-md); padding:16px; margin-bottom:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#DBEAFE'" onmouseout="this.style.background='#EFF6FF'" onclick="openAdminClassDetail('${c.id}')">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>${c.titulo}</strong>
-            <span style="font-size:0.75rem; background:var(--accent-orange-light); color:var(--accent-orange); font-weight:700; padding:2px 8px; border-radius:4px;">${c.nivel}</span>
+            <h4 style="margin:0;">${c.titulo}</h4>
+            <span style="font-size:0.75rem; background:rgba(37,99,235,0.1); color:#2563EB; font-weight:700; padding:2px 8px; border-radius:4px;">${c.nivel}</span>
           </div>
-          <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 8px 0;">${c.descripcion}</p>
-          <div style="font-size:0.8rem;">
-            🎥 <strong>YouTube:</strong> <a href="${c.youtubeUrl}" target="_blank">${c.youtubeUrl}</a><br>
-            📄 <strong>PPT:</strong> ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank">Ver Archivo PPT</a>` : 'Sin archivo adjunto'}<br>
-            📝 <strong>Apunte:</strong> ${c.apunteUrl ? `<a href="${c.apunteUrl}" target="_blank">Ver Apunte PDF</a>` : 'Sin apunte'}
-          </div>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 0 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${c.descripcion || ''}</p>
         </div>
       `).join('');
 
       // Render Users
       document.getElementById('adminUsersList').innerHTML = filteredUsers.map(u => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border-light);">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 10px; border-bottom:1px solid var(--border-light); cursor:pointer; transition:background 0.2s; border-radius:4px;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'" onclick="openAdminUserDetail('${u.id}')">
           <div>
             <strong>${u.nombre}</strong> (@${u.username})<br>
             <span style="font-size:0.8rem; color:var(--text-muted);">${u.email}</span>
@@ -410,80 +462,174 @@
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="badge-role role-${u.role}">${u.role}</span>
-            <button onclick="deleteUser('${u.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer;" title="Eliminar"><i class="ri-delete-bin-line"></i></button>
+            <button onclick="event.stopPropagation(); deleteUser('${u.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer;" title="Eliminar"><i class="ri-delete-bin-line"></i></button>
           </div>
         </div>
       `).join('');
 
-      // Render Grades
-      if(data.grades) {
-        const filteredGrades = data.grades.filter(g => {
+      // Render Evaluations
+      if(data.evaluations) {
+        const filteredEvals = data.evaluations.filter(e => {
           if (!filterNivelText) return true;
-          const st = data.users.find(u => u.id === g.studentId);
-          return st && st.nivel === filterNivelText;
+          return e.nivel === filterNivelText;
         });
-        document.getElementById('adminGradesList').innerHTML = filteredGrades.map(g => {
-          const student = data.users.find(u => u.id === g.studentId);
-          const studentName = student ? student.nombre : 'Desconocido';
-          return `
-          <div style="padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <strong>${g.unidad}</strong> - <span style="color:var(--accent-orange); font-weight:700;">${g.nota}</span> (${g.porcentaje}%)<br>
-              <span style="font-size:0.8rem; color:var(--text-secondary);">Estudiante: ${studentName}</span>
+        document.getElementById('adminEvaluationsList').innerHTML = filteredEvals.map(e => `
+          <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-left:4px solid var(--accent-orange); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#FFEDD5'" onmouseout="this.style.background='#FFF7ED'" onclick="openAdminEvalDetail('${e.id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4 style="margin:0;">${e.titulo}</h4>
+              <span style="font-size:0.75rem; background:rgba(234,88,12,0.1); color:var(--accent-orange); font-weight:700; padding:2px 8px; border-radius:4px;">${e.nivel}</span>
             </div>
-            <button onclick="openEditGradeModal('${g.id}', '${g.unidad}', ${g.puntajeObtenido}, ${g.puntajeTotal}, '${g.observaciones || ''}')" class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;">Editar</button>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 0 0;">Puntaje Total: ${e.puntajeTotal}</p>
           </div>
-        `}).join('');
+        `).join('');
       }
 
       // Render Attendance
-      if(data.attendance) {
-        const filteredAtt = data.attendance.filter(a => {
+      if(data.classes) {
+        const filteredAttClasses = data.classes.filter(c => {
           if (!filterNivelText) return true;
-          const st = data.users.find(u => u.id === a.studentId);
-          return st && st.nivel === filterNivelText;
+          return c.nivel === filterNivelText;
         });
-        document.getElementById('adminAttendanceList').innerHTML = filteredAtt.map(a => {
-          const student = data.users.find(u => u.id === a.studentId);
-          const c = data.classes.find(cl => cl.id === a.classId);
-          const studentName = student ? student.nombre : 'Desconocido';
-          const className = c ? c.titulo : 'Clase';
-          const badgeColor = a.status === 'presente' ? 'background:#E0F2FE; color:#0284C7;' : 'background:#FEE2E2; color:#DC2626;';
-          return `
-          <div style="padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <strong>${studentName}</strong><br>
-              <span style="font-size:0.8rem; color:var(--text-secondary);">${className}</span>
+        document.getElementById('adminAttendanceList').innerHTML = filteredAttClasses.map(c => `
+          <div style="background:#F0FDF4; border:1px solid #DCFCE7; border-left:4px solid #16A34A; border-radius:var(--radius-md); padding:16px; margin-bottom:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#DCFCE7'" onmouseout="this.style.background='#F0FDF4'" onclick="openAdminAttDetail('${c.id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4 style="margin:0;">${c.titulo}</h4>
+              <span style="font-size:0.75rem; background:rgba(22,163,74,0.1); color:#16A34A; font-weight:700; padding:2px 8px; border-radius:4px;">${c.nivel}</span>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase; ${badgeColor}">${a.status}</span>
-              <button onclick="openEditAttendanceModal('${a.id}', '${a.status}')" class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;">Editar</button>
-            </div>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 0 0;">Ver y editar asistencia de estudiantes</p>
           </div>
-        `}).join('');
+        `).join('');
       }
 
-      // Render NOAs
-      if(data.noas) {
-        const filteredNoas = data.noas.filter(n => {
-          if (!filterNivelText) return true;
-          const p = data.users.find(u => u.id === n.pedagogoId);
-          return p && p.nivel === filterNivelText;
-        });
-        document.getElementById('adminNoaList').innerHTML = filteredNoas.map(n => {
-          const p = data.users.find(u => u.id === n.pedagogoId);
-          const pName = p ? p.nombre : 'Desconocido';
-          const dateStr = new Date(n.fechaSubida).toLocaleString('es-ES');
-          return `
-          <div style="padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <strong>Archivo NOA</strong> subido por <span style="font-weight:600;">${pName}</span><br>
-              <span style="font-size:0.8rem; color:var(--text-secondary);">Fecha: ${dateStr}</span>
-            </div>
-            <a href="${n.archivoUrl}" target="_blank" class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;"><i class="ri-download-line"></i> Descargar</a>
-          </div>
-        `}).join('');
+
+    }
+
+    function openAdminUserDetail(id) {
+      const u = adminData.users.find(x => x.id === id);
+      if(!u) return;
+      document.getElementById('adminUserDetailTitle').textContent = 'Estudiante: ' + u.nombre;
+      document.getElementById('adminUserDetailDesc').textContent = 'Nivel: ' + (u.nivel || 'N/A') + ' | Email: ' + u.email;
+      
+      const userAtt = adminData.attendance.filter(a => a.studentId === u.id);
+      let htmlAtt = '<table style="width:100%; text-align:left; border-collapse:collapse; margin-bottom:10px;"><thead><tr style="border-bottom:2px solid var(--border-light);"><th style="padding:8px;">Clase</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Acción</th></tr></thead><tbody>';
+      const classesForLevel = adminData.classes.filter(c => c.nivel === u.nivel);
+      classesForLevel.forEach(c => {
+        const att = userAtt.find(a => a.classId === c.id);
+        const status = att ? att.status : 'ausente';
+        const color = status === 'presente' ? '#0284C7' : '#DC2626';
+        const bg = status === 'presente' ? '#E0F2FE' : '#FEE2E2';
+        htmlAtt += `<tr style="border-bottom:1px solid var(--border-light);">
+          <td style="padding:8px;">${c.titulo}</td>
+          <td style="padding:8px;"><span style="background:${bg}; color:${color}; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${status}</span></td>
+          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditAttendanceModal('${att ? att.id : ''}', '${status}', '${c.id}', '${u.id}')">Editar</button></td>
+        </tr>`;
+      });
+      htmlAtt += '</tbody></table>';
+      document.getElementById('adminUserAttendanceTable').innerHTML = htmlAtt;
+      
+      const userGrades = adminData.grades.filter(g => g.studentId === u.id);
+      let htmlGrades = '<table style="width:100%; text-align:left; border-collapse:collapse; margin-bottom:10px;"><thead><tr style="border-bottom:2px solid var(--border-light);"><th style="padding:8px;">Evaluación</th><th style="padding:8px;">Nota</th><th style="padding:8px;">Acción</th></tr></thead><tbody>';
+      const evalsForLevel = adminData.evaluations.filter(e => e.nivel === u.nivel);
+      evalsForLevel.forEach(e => {
+        const grade = userGrades.find(g => g.unidad === e.titulo);
+        htmlGrades += `<tr style="border-bottom:1px solid var(--border-light);">
+          <td style="padding:8px;">${e.titulo}</td>
+          <td style="padding:8px;">${grade ? `<span style="color:var(--accent-orange); font-weight:700;">${grade.nota}</span> <span style="font-size:0.8rem; color:var(--text-secondary);">(${grade.porcentaje}%)</span>` : '<span style="color:var(--text-muted);">Sin nota</span>'}</td>
+          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.puntajeObtenido : 0}, ${e.puntajeTotal}, '${grade ? grade.observaciones : ''}')">Editar</button></td>
+        </tr>`;
+      });
+      htmlGrades += '</tbody></table>';
+      document.getElementById('adminUserGradesTable').innerHTML = htmlGrades;
+      
+      document.getElementById('adminUserDetailModal').style.display = 'flex';
+    }
+
+    function closeAdminUserDetailModal() { document.getElementById('adminUserDetailModal').style.display = 'none'; }
+
+    function openAdminClassDetail(id) {
+      const c = adminData.classes.find(x => x.id === id);
+      if(!c) return;
+      document.getElementById('adminClassDetailTitle').textContent = c.titulo;
+      document.getElementById('adminClassDetailDesc').textContent = c.descripcion || '';
+      
+      const videoDiv = document.getElementById('adminClassVideo');
+      if(c.youtubeId) {
+        videoDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${c.youtubeId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>`;
+      } else {
+        videoDiv.innerHTML = '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#F1F5F9; border-radius:8px;"><p style="color:var(--text-muted);">Sin video disponible</p></div>';
       }
+      
+      const linksDiv = document.getElementById('adminClassLinks');
+      let links = '';
+      if(c.pptUrl) links += `<a href="${c.pptUrl}" target="_blank" class="btn btn-outline"><i class="ri-file-ppt-2-line"></i> Ver PPT</a>`;
+      if(c.apunteUrl) links += `<a href="${c.apunteUrl}" target="_blank" class="btn btn-outline"><i class="ri-file-pdf-line"></i> Ver Apunte</a>`;
+      linksDiv.innerHTML = links || '<span style="font-size:0.85rem; color:var(--text-muted);">Sin materiales adicionales</span>';
+      
+      document.getElementById('adminClassDetailModal').style.display = 'flex';
+    }
+
+    function closeAdminClassDetailModal() {
+      document.getElementById('adminClassVideo').innerHTML = '';
+      document.getElementById('adminClassDetailModal').style.display = 'none';
+    }
+
+    function openAdminAttDetail(id) {
+      const c = adminData.classes.find(x => x.id === id);
+      if(!c) return;
+      document.getElementById('adminAttDetailTitle').textContent = 'Asistencia: ' + c.titulo;
+      document.getElementById('adminAttDetailDesc').textContent = 'Nivel: ' + c.nivel;
+      
+      const students = adminData.users.filter(u => u.nivel === c.nivel && u.role === 'student');
+      let html = '<table style="width:100%; text-align:left; border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--border-light);"><th style="padding:8px;">Estudiante</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Acción</th></tr></thead><tbody>';
+      
+      students.forEach(st => {
+        const att = adminData.attendance.find(a => a.studentId === st.id && a.classId === c.id);
+        const status = att ? att.status : 'ausente';
+        const color = status === 'presente' ? '#0284C7' : '#DC2626';
+        const bg = status === 'presente' ? '#E0F2FE' : '#FEE2E2';
+        html += `<tr style="border-bottom:1px solid var(--border-light);">
+          <td style="padding:8px;"><strong>${st.nombre}</strong></td>
+          <td style="padding:8px;"><span style="background:${bg}; color:${color}; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${status}</span></td>
+          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditAttendanceModal('${att ? att.id : ''}', '${status}', '${c.id}', '${st.id}')">Editar</button></td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('adminAttDetailTable').innerHTML = html;
+      document.getElementById('adminAttDetailModal').style.display = 'flex';
+    }
+
+    function closeAdminAttDetailModal() { document.getElementById('adminAttDetailModal').style.display = 'none'; }
+
+    function openAdminEvalDetail(id) {
+      const e = adminData.evaluations.find(x => x.id === id);
+      if(!e) return;
+      document.getElementById('adminEvalDetailTitle').textContent = 'Evaluación: ' + e.titulo;
+      document.getElementById('adminEvalDetailDesc').textContent = 'Puntaje Total: ' + e.puntajeTotal + ' | Nivel: ' + e.nivel;
+      
+      const students = adminData.users.filter(u => u.nivel === e.nivel && u.role === 'student');
+      let html = '<table style="width:100%; text-align:left; border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--border-light);"><th style="padding:8px;">Estudiante</th><th style="padding:8px;">Nota</th><th style="padding:8px;">Acción</th></tr></thead><tbody>';
+      
+      students.forEach(st => {
+        const grade = adminData.grades.find(g => g.studentId === st.id && g.unidad === e.titulo);
+        html += `<tr style="border-bottom:1px solid var(--border-light);">
+          <td style="padding:8px;"><strong>${st.nombre}</strong></td>
+          <td style="padding:8px;">
+            ${grade ? `<span style="color:var(--accent-orange); font-weight:700;">${grade.nota}</span> <span style="font-size:0.8rem; color:var(--text-secondary);">(${grade.porcentaje}%)</span>` : '<span style="color:var(--text-muted);">Sin nota</span>'}
+          </td>
+          <td style="padding:8px;">
+            <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.puntajeObtenido : 0}, ${e.puntajeTotal}, '${grade ? grade.observaciones : ''}')">
+              ${grade ? 'Editar' : 'Ingresar'}
+            </button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('adminEvalDetailTable').innerHTML = html;
+      document.getElementById('adminEvalDetailModal').style.display = 'flex';
+    }
+
+    function closeAdminEvalDetailModal() {
+      document.getElementById('adminEvalDetailModal').style.display = 'none';
     }
 
     function openClassModal() { document.getElementById('classModal').style.display = 'flex'; }
@@ -578,9 +724,10 @@
       if(res.ok) { closeEditGradeModal(); loadOverview(); }
     });
 
-    function openEditAttendanceModal(id, status) {
-      document.getElementById('editAttId').value = id;
+    function openEditAttendanceModal(id, status, classId, studentId) {
+      document.getElementById('editAttId').value = id || '';
       document.getElementById('editAttStatus').value = status;
+      // We will ignore classId/studentId for now since editing an existing record uses 'id'
       document.getElementById('editAttendanceModal').style.display = 'flex';
     }
     function closeEditAttendanceModal() { document.getElementById('editAttendanceModal').style.display = 'none'; }
@@ -589,6 +736,10 @@
       e.preventDefault();
       const id = document.getElementById('editAttId').value;
       const status = document.getElementById('editAttStatus').value;
+      if (!id) {
+        alert("El registro de asistencia no existe aún en la base de datos.");
+        return;
+      }
       const res = await fetch('/api/admin/attendance/' + id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

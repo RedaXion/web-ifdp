@@ -175,24 +175,18 @@
         <h3 id="modalEvalTitle" style="margin-bottom: 10px;"></h3>
         <p id="modalEvalDesc" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px;"></p>
         
-        <form id="evalGradesForm" enctype="multipart/form-data">
+        <form id="evalGradesForm">
           <input type="hidden" id="evalGradesId">
           <input type="hidden" id="evalGradesTotal">
           
           <div style="margin-bottom:20px;">
             <h4 style="margin-bottom:10px;"><i class="ri-file-chart-line text-blue"></i> Ingreso de Notas (Puntaje Obtenido)</h4>
-            <div id="evalStudentsList" style="max-height:250px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:var(--radius-sm); margin-bottom:15px;"></div>
+            <div id="evalStudentsList" style="max-height:350px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:var(--radius-sm); margin-bottom:15px;"></div>
           </div>
 
-          <div style="margin-bottom:20px;">
-            <h4 style="margin-bottom:10px;"><i class="ri-file-upload-line text-orange"></i> Subir Archivo Físico NOA</h4>
-            <input type="file" id="evalNoaFile" name="archivoNoa" accept=".pdf,image/*" style="width:100%; padding:8px; border:1px solid var(--border-light); border-radius:4px;">
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Opcional. Sube la foto o PDF de las notas físicas para esta evaluación.</p>
-          </div>
-          
           <div style="display:flex; justify-content:flex-end; gap:12px;">
             <button type="button" onclick="closeEvalModal()" class="btn btn-outline">Cerrar</button>
-            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Todo</button>
+            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Notas</button>
           </div>
         </form>
       </div>
@@ -391,11 +385,6 @@
       formData.append('unidad', evaluation ? evaluation.titulo : 'Evaluación');
       formData.append('puntajeTotal', evalTotal);
       formData.append('gradesData', JSON.stringify(gradesData));
-
-      const fileInput = document.getElementById('evalNoaFile');
-      if (fileInput.files.length > 0) {
-        formData.append('archivoNoa', fileInput.files[0]);
-      }
 
       const res = await fetch('/api/paidagogo/grades/batch', {
         method: 'POST',

@@ -11,7 +11,7 @@ const initialData = {
       id: "u_admin_1",
       username: "admin",
       passwordHash: bcrypt.hashSync("admin123", 10),
-      nombre: "Pastor Christopher Rodríguez",
+      nombre: "Director Escuela Discipulado Christopher RodVal",
       email: "admin@ifdp.cl",
       role: "admin"
     },

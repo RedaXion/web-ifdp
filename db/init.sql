@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS attendance (
 -- Inserción de usuario administrador por defecto si no existe
 INSERT INTO users (id, nombre, username, password_hash, role, nivel)
 VALUES ('u_admin_1', 'Director Escuela Discipulado Christopher RodVal', 'admin', '$2a$10$eDMfTFgVUa33odqN2SGvnusyAsfdl47uVGB88f2nK9FkaL8JBn3S6', 'admin', 'Admin')
-ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;
+ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, nombre = EXCLUDED.nombre;
 
 -- Inserción de un paidagogo por defecto si no existe
 INSERT INTO users (id, nombre, username, password_hash, role, nivel)
