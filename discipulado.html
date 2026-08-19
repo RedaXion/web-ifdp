@@ -116,30 +116,25 @@
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ username, password })
         });
         const data = await res.json();
 
         if (res.ok) {
+          if (data.user.role !== 'student') {
+            errorDiv.textContent = 'Este portal es solo para estudiantes.';
+            errorDiv.style.display = 'block';
+            return;
+          }
           showDashboard(data.user);
         } else {
-          errorDiv.textContent = data.error || 'Error al iniciar sesión';
+          errorDiv.textContent = data.error || 'Usuario o contraseña incorrectos';
           errorDiv.style.display = 'block';
         }
       } catch (err) {
-        // Modo local autónomo (sin servidor node corriendo)
-        if ((username === 'alumno1' || username === 'estudiante') && (password === 'estudiante123' || password === '123456')) {
-          const mockUser = {
-            id: 'u_student_1',
-            nombre: 'María González (Estudiante Demo)',
-            role: 'student',
-            nivel: 'Nivel 1: Corderitos'
-          };
-          showDashboard(mockUser);
-        } else {
-          errorDiv.textContent = 'Credenciales locales inválidas. Usa alumno1 / estudiante123';
-          errorDiv.style.display = 'block';
-        }
+        errorDiv.textContent = 'Error de conexión. Verifica tu internet.';
+        errorDiv.style.display = 'block';
       }
     });
 

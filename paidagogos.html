@@ -194,23 +194,25 @@
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ username, password })
         });
         const data = await res.json();
 
         if (res.ok) {
+          if (data.user.role !== 'paidagogo' && data.user.role !== 'admin') {
+            document.getElementById('loginError').textContent = 'Este portal es solo para paidagogos.';
+            document.getElementById('loginError').style.display = 'block';
+            return;
+          }
           showDashboard(data.user);
         } else {
-          document.getElementById('loginError').textContent = data.error || 'Error al iniciar sesión';
+          document.getElementById('loginError').textContent = data.error || 'Usuario o contraseña incorrectos';
           document.getElementById('loginError').style.display = 'block';
         }
       } catch (e) {
-        if (username === 'paidagogo1' && password === 'profe123') {
-          showDashboard({ id: 'u_paidagogo_1', nombre: 'Paidagogo Juan Pérez', role: 'paidagogo' });
-        } else {
-          document.getElementById('loginError').textContent = 'Credenciales inválidas. Usa paidagogo1 / profe123';
-          document.getElementById('loginError').style.display = 'block';
-        }
+        document.getElementById('loginError').textContent = 'Error de conexión. Verifica tu internet.';
+        document.getElementById('loginError').style.display = 'block';
       }
     });
 

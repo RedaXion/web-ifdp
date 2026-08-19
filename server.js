@@ -43,11 +43,13 @@ const SUPERADMIN_EMAIL = 'chris.rodval@gmail.com';
 const activeSessions = new Map();
 
 app.use((req, res, next) => {
-  // Actualizar usuarios activos en cada request (no solo HTML)
-  const sid = req.session?.id || req.ip;
-  if (sid) activeSessions.set(sid, Date.now());
+  // Solo contar usuarios autenticados como "activos"
+  if (req.session?.user?.id) {
+    activeSessions.set(req.session.user.id, Date.now());
+  }
   // Contar visita solo cuando carga una página HTML
   if (req.path.endsWith('.html') || req.path === '/') {
+    const sid = req.session?.id || req.ip;
     pool.query('INSERT INTO page_visits (session_id) VALUES ($1)', [sid]).catch(() => {});
   }
   next();
