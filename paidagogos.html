@@ -123,6 +123,11 @@
           <div id="modalClassVideo" style="position:relative; padding-bottom:56.25%; height:0; border-radius:8px; overflow:hidden;"></div>
         </div>
 
+        <div id="modalClassAnexos" style="margin-bottom:20px; display:none;">
+          <h4 style="margin-bottom:10px;"><i class="ri-links-line" style="color:#EA4335;"></i> Videos Complementarios</h4>
+          <div id="modalClassAnexosList"></div>
+        </div>
+
         <hr style="border:none; border-top:1px solid var(--border-light); margin:20px 0;">
         
         <h4 style="margin-bottom:15px;"><i class="ri-calendar-check-line text-blue"></i> Control de Asistencia</h4>
@@ -298,6 +303,19 @@
       
       const videoDiv = document.getElementById('modalClassVideo');
       videoDiv.innerHTML = c.youtubeId ? `<iframe src="https://www.youtube.com/embed/${c.youtubeId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:#f1f5f9; color:var(--text-muted);">Sin video</div>';
+
+      const anexosDiv = document.getElementById('modalClassAnexos');
+      const anexosList = document.getElementById('modalClassAnexosList');
+      if (c.anexosYoutube) {
+        const urls = c.anexosYoutube.split(',').map(u => u.trim()).filter(Boolean);
+        if (urls.length > 0) {
+          anexosList.innerHTML = urls.map((url, i) => {
+            const yid = url.match(/(?:v=|youtu\.be\/)([^&?]+)/)?.[1] || url;
+            return `<a href="https://youtube.com/watch?v=${yid}" target="_blank" style="display:flex; align-items:center; gap:8px; margin-bottom:8px; color:#0284C7; font-size:0.9rem;"><i class="ri-youtube-line" style="color:#EA4335;"></i> Video complementario ${i+1}</a>`;
+          }).join('');
+          anexosDiv.style.display = 'block';
+        } else { anexosDiv.style.display = 'none'; }
+      } else { anexosDiv.style.display = 'none'; }
 
       document.getElementById('attendanceClassId').value = classId;
       

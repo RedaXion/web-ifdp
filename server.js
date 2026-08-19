@@ -119,7 +119,7 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
     // Para paidagogos: filtrar por su propio nivel, no por el del estudiante buscado
     const callerNivel = req.session.user.nivel;
     const studentNivel = (req.session.user.role === 'paidagogo') ? callerNivel : studentRes.rows[0]?.nivel;
-    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
+    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion, anexos_youtube as "anexosYoutube" FROM classes WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const gradesRes = await pool.query(`
       SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
@@ -294,7 +294,7 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
       FROM grades
     `);
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance');
-    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion FROM classes ORDER BY created_at ASC');
+    const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion, anexos_youtube as "anexosYoutube" FROM classes ORDER BY created_at ASC');
     const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations ORDER BY created_at ASC');
     const noaRes = await pool.query('SELECT id, pedagogo_id as "pedagogoId", evaluacion_id as "evaluacionId", archivo_url as "archivoUrl", fecha_subida as "fechaSubida" FROM nota_noa');
 
@@ -510,14 +510,14 @@ app.put('/api/admin/attendance/:id', authRole(['admin']), async (req, res) => {
 
 // Crear/Subir clase con PPT y Youtube
 app.post('/api/admin/classes', authRole(['admin']), async (req, res) => {
-  const { titulo, nivel, youtubeUrl, pptUrl, apunteUrl, descripcion } = req.body;
+  const { titulo, nivel, youtubeUrl, pptUrl, apunteUrl, descripcion, anexos_youtube } = req.body;
   const newId = 'c_' + Date.now();
   const yId = getYoutubeId(youtubeUrl);
   
   try {
     await pool.query(
-      'INSERT INTO classes (id, titulo, nivel, youtube_id, ppt_url, apunte_url, descripcion) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [newId, titulo, nivel || 'Nivel 1: Corderitos', yId, pptUrl || '', apunteUrl || '', descripcion || '']
+      'INSERT INTO classes (id, titulo, nivel, youtube_id, ppt_url, apunte_url, descripcion, anexos_youtube) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [newId, titulo, nivel || 'Nivel 1: Corderitos', yId, pptUrl || '', apunteUrl || '', descripcion || '', anexos_youtube || '']
     );
     res.json({ success: true });
   } catch(err) {
@@ -527,13 +527,13 @@ app.post('/api/admin/classes', authRole(['admin']), async (req, res) => {
 });
 
 app.put('/api/admin/classes/:id', authRole(['admin']), async (req, res) => {
-  const { titulo, nivel, youtubeUrl, pptUrl, apunteUrl, descripcion } = req.body;
+  const { titulo, nivel, youtubeUrl, pptUrl, apunteUrl, descripcion, anexos_youtube } = req.body;
   const yId = getYoutubeId(youtubeUrl);
   
   try {
     await pool.query(
-      'UPDATE classes SET titulo = $1, nivel = $2, youtube_id = $3, ppt_url = $4, apunte_url = $5, descripcion = $6 WHERE id = $7',
-      [titulo, nivel, yId, pptUrl || '', apunteUrl || '', descripcion || '', req.params.id]
+      'UPDATE classes SET titulo = $1, nivel = $2, youtube_id = $3, ppt_url = $4, apunte_url = $5, descripcion = $6, anexos_youtube = $7 WHERE id = $8',
+      [titulo, nivel, yId, pptUrl || '', apunteUrl || '', descripcion || '', anexos_youtube || '', req.params.id]
     );
     res.json({ success: true });
   } catch(err) {

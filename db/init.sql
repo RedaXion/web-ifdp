@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS classes (
     ppt_url TEXT,
     apunte_url TEXT,
     descripcion TEXT,
+    anexos_youtube TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

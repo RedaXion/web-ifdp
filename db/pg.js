@@ -19,6 +19,12 @@ async function initDB() {
     const initSqlPath = path.join(__dirname, 'init.sql');
     const initSql = fs.readFileSync(initSqlPath, 'utf8');
     await pool.query(initSql);
+    // Migrations
+    try {
+      await pool.query('ALTER TABLE classes ADD COLUMN IF NOT EXISTS anexos_youtube TEXT');
+    } catch(e) {
+      // Ignorar si falla por otra cosa
+    }
     console.log('✅ Base de datos PostgreSQL inicializada correctamente.');
   } catch (err) {
     console.error('❌ Error inicializando base de datos PostgreSQL:', err);
