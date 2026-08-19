@@ -68,7 +68,7 @@ app.post('/api/login', async (req, res) => {
       nombre: user.nombre,
       email: user.email,
       role: user.role,
-      nivel: user.nivel_id || null
+      nivel: user.nivel
     };
 
     res.json({ success: true, user: req.session.user });
@@ -483,6 +483,22 @@ app.post('/api/admin/classes', authRole(['admin']), async (req, res) => {
     await pool.query(
       'INSERT INTO classes (id, titulo, nivel, youtube_id, ppt_url, apunte_url, descripcion) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [newId, titulo, nivel || 'Nivel 1: Corderitos', yId, pptUrl || '', apunteUrl || '', descripcion || '']
+    );
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+app.put('/api/admin/classes/:id', authRole(['admin']), async (req, res) => {
+  const { titulo, nivel, youtubeUrl, pptUrl, apunteUrl, descripcion } = req.body;
+  const yId = getYoutubeId(youtubeUrl);
+  
+  try {
+    await pool.query(
+      'UPDATE classes SET titulo = $1, nivel = $2, youtube_id = $3, ppt_url = $4, apunte_url = $5, descripcion = $6 WHERE id = $7',
+      [titulo, nivel, yId, pptUrl || '', apunteUrl || '', descripcion || '', req.params.id]
     );
     res.json({ success: true });
   } catch(err) {

@@ -86,7 +86,6 @@
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3><i class="ri-group-line text-blue"></i> Estudiantes & Evaluaciones</h3>
-            <button onclick="openGradeModal()" class="btn btn-primary" style="background: #0284C7; font-size: 0.8rem; padding: 6px 12px;"><i class="ri-add-line"></i> Ingresar Nota</button>
           </div>
           <div class="table-container">
             <table>
@@ -104,38 +103,7 @@
       </div>
     </div>
 
-    <!-- MODAL INGRESAR NOTA -->
-    <div id="gradeModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
-      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:480px;">
-        <h3 style="margin-bottom: 20px;">Ingresar Calificación</h3>
-        <form id="gradeForm">
-          <div class="form-group">
-            <label>Seleccionar Estudiante</label>
-            <select id="gradeStudentSelect" required></select>
-          </div>
-          <div class="form-group">
-            <label>Nombre de la Evaluación</label>
-            <input type="text" id="gradeUnidad" placeholder="Ej: Evaluación 1" required>
-          </div>
-          <div class="form-group">
-            <label>Puntaje Obtenido</label>
-            <input type="number" step="0.5" id="gradeObtenido" placeholder="Ej: 25" required>
-          </div>
-          <div class="form-group">
-            <label>Puntaje Total</label>
-            <input type="number" step="0.5" id="gradeTotal" placeholder="Ej: 30" required>
-          </div>
-          <div class="form-group">
-            <label>Observaciones</label>
-            <textarea id="gradeObservaciones" rows="2" placeholder="Comentarios..."></textarea>
-          </div>
-          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
-            <button type="button" onclick="closeGradeModal()" class="btn btn-outline">Cancelar</button>
-            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Nota</button>
-          </div>
-        </form>
-      </div>
-    </div>
+
 
     <!-- MODAL CLASE VIEW -->
     <div id="classModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
@@ -419,39 +387,11 @@
       if (res.ok) {
         alert('Asistencia registrada exitosamente.');
         closeClassModal();
-      }
-    });
-
-    function openGradeModal(studentId = null) {
-      if (studentId) document.getElementById('gradeStudentSelect').value = studentId;
-      document.getElementById('gradeModal').style.display = 'flex';
-    }
-
-    function closeGradeModal() {
-      document.getElementById('gradeModal').style.display = 'none';
-    }
-
-    document.getElementById('gradeForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        studentId: document.getElementById('gradeStudentSelect').value,
-        unidad: document.getElementById('gradeUnidad').value,
-        puntajeObtenido: document.getElementById('gradeObtenido').value,
-        puntajeTotal: document.getElementById('gradeTotal').value,
-        observaciones: document.getElementById('gradeObservaciones').value
-      };
-
-      const res = await fetch('/api/paidagogo/grades', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        closeGradeModal();
         loadStudents();
       }
     });
+
+
 
     async function logout() {
       await fetch('/api/logout', { method: 'POST' });

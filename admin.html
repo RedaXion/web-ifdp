@@ -277,6 +277,48 @@
       </div>
     </div>
 
+    <!-- MODAL EDITAR CLASE -->
+    <div id="editClassModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:540px;">
+        <h3 style="margin-bottom: 20px;">Editar Clase</h3>
+        <form id="editClassForm">
+          <input type="hidden" id="editClassId">
+          <div class="form-group">
+            <label>Título de la Clase</label>
+            <input type="text" id="editClassTitulo" required>
+          </div>
+          <div class="form-group">
+            <label>Nivel de Discipulado</label>
+            <select id="editClassNivel" required>
+              <option value="Nivel 1: Corderitos">Nivel 1: Corderitos</option>
+              <option value="Nivel 2: Tekníon">Nivel 2: Tekníon</option>
+              <option value="Nivel 3: Neaniskos">Nivel 3: Neaniskos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ID de YouTube (o enlace)</label>
+            <input type="text" id="editClassYoutubeUrl" required>
+          </div>
+          <div class="form-group">
+            <label>Enlace del PPT / Presentación</label>
+            <input type="url" id="editClassPptUrl">
+          </div>
+          <div class="form-group">
+            <label>Enlace del Apunte (Para el Paidagogo)</label>
+            <input type="url" id="editClassApunteUrl">
+          </div>
+          <div class="form-group">
+            <label>Descripción / Resumen de la Clase</label>
+            <textarea id="editClassDescripcion" rows="3"></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeEditClassModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- MODAL CREAR EVALUACION -->
     <div id="evalModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
       <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:540px;">
@@ -447,7 +489,8 @@
             <span style="font-size:0.75rem; background:rgba(37,99,235,0.1); color:#2563EB; font-weight:700; padding:2px 8px; border-radius:4px;">${c.nivel}</span>
           </div>
           <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 8px 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer;" onclick="openAdminClassDetail('${c.id}')">${c.descripcion || ''}</p>
-          <div style="display:flex; justify-content:flex-end;">
+          <div style="display:flex; justify-content:flex-end; gap: 12px;">
+            <button onclick="openEditClassModal('${c.id}')" style="background:none; border:none; color:#0284C7; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-edit-line"></i> Editar clase</button>
             <button onclick="deleteClass('${c.id}')" style="background:none; border:none; color:#DC2626; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-delete-bin-line"></i> Eliminar clase</button>
           </div>
         </div>
@@ -675,6 +718,48 @@
         body: JSON.stringify(payload)
       });
       if (res.ok) { closeClassModal(); loadOverview(); }
+    });
+
+    function openEditClassModal(id) {
+      const c = adminData.classes.find(x => x.id === id);
+      if(!c) return;
+      document.getElementById('editClassId').value = c.id;
+      document.getElementById('editClassTitulo').value = c.titulo;
+      document.getElementById('editClassNivel').value = c.nivel;
+      document.getElementById('editClassYoutubeUrl').value = c.youtubeId ? `https://youtube.com/watch?v=${c.youtubeId}` : '';
+      document.getElementById('editClassPptUrl').value = c.pptUrl || '';
+      document.getElementById('editClassApunteUrl').value = c.apunteUrl || '';
+      document.getElementById('editClassDescripcion').value = c.descripcion || '';
+      document.getElementById('editClassModal').style.display = 'flex';
+    }
+
+    function closeEditClassModal() {
+      document.getElementById('editClassModal').style.display = 'none';
+      document.getElementById('editClassForm').reset();
+    }
+
+    document.getElementById('editClassForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editClassId').value;
+      const payload = {
+        titulo: document.getElementById('editClassTitulo').value,
+        nivel: document.getElementById('editClassNivel').value,
+        youtubeUrl: document.getElementById('editClassYoutubeUrl').value,
+        pptUrl: document.getElementById('editClassPptUrl').value,
+        apunteUrl: document.getElementById('editClassApunteUrl').value,
+        descripcion: document.getElementById('editClassDescripcion').value
+      };
+      const res = await fetch('/api/admin/classes/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) { 
+        closeEditClassModal(); 
+        loadOverview(); 
+      } else {
+        alert("Error al actualizar la clase");
+      }
     });
 
     document.getElementById('userForm').addEventListener('submit', async (e) => {
