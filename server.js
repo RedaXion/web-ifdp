@@ -19,7 +19,12 @@ app.use(session({
   secret: 'ifdp_secret_key_discipulado_2026',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 horas
+  proxy: true,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
 }));
 
 // Persistent upload directory (Railway) and Multer config
@@ -34,30 +39,30 @@ app.use('/uploads', express.static(uploadDir));
 // Super admin email constant
 const SUPERADMIN_EMAIL = 'chris.rodval@gmail.com';
 
-// Servir la web principal de la iglesia
-app.use(express.static(path.join(__dirname)));
-
-// --- Visit & Active User Tracking ---
-const activeSessions = new Map(); // sessionId -> lastSeen timestamp
+// --- Visit & Active User Tracking (BEFORE static) ---
+const activeSessions = new Map();
 
 app.use((req, res, next) => {
-  // Only count HTML page requests (not API/assets)
+  // Actualizar usuarios activos en cada request (no solo HTML)
+  const sid = req.session?.id || req.ip;
+  if (sid) activeSessions.set(sid, Date.now());
+  // Contar visita solo cuando carga una página HTML
   if (req.path.endsWith('.html') || req.path === '/') {
-    const sid = req.session?.id || req.ip;
-    activeSessions.set(sid, Date.now());
-    // Record visit asynchronously (non-blocking)
     pool.query('INSERT INTO page_visits (session_id) VALUES ($1)', [sid]).catch(() => {});
   }
   next();
 });
 
-// Clean stale active sessions every 30s (inactive > 5 min)
+// Limpiar sesiones inactivas > 5 min cada 30s
 setInterval(() => {
   const cutoff = Date.now() - 5 * 60 * 1000;
   for (const [sid, ts] of activeSessions.entries()) {
     if (ts < cutoff) activeSessions.delete(sid);
   }
 }, 30000);
+
+// Servir la web principal de la iglesia
+app.use(express.static(path.join(__dirname)));
 
 app.get('/api/admin/stats', authRole(['admin']), async (req, res) => {
   try {
