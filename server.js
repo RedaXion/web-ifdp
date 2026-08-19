@@ -165,10 +165,12 @@ app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req,
       SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
       FROM grades
     `);
+    const attRes = await pool.query('SELECT class_id as "classId", student_id as "studentId", status FROM attendance');
 
     const studentsWithGrades = studentsRes.rows.map(s => ({
       ...s,
-      grades: gradesRes.rows.filter(g => g.studentId === s.id).map(g => ({...g, nota: parseFloat(g.nota)}))
+      grades: gradesRes.rows.filter(g => g.studentId === s.id).map(g => ({...g, nota: parseFloat(g.nota)})),
+      attendance: attRes.rows.filter(a => a.studentId === s.id)
     }));
 
     res.json(studentsWithGrades);
@@ -338,15 +340,26 @@ app.get('/api/admin/export', authRole(['admin']), async (req, res) => {
     const usersRes = await pool.query(usersQuery, usersParams);
     const users = usersRes.rows;
 
-    let csv = 'ID,Nombre,Username,Email,Rol,Nivel\n';
+    const gradesRes = await pool.query('SELECT student_id as "studentId", nota FROM grades');
+    const attRes = await pool.query('SELECT student_id as "studentId", status FROM attendance');
+
+    let csv = 'ID,Nombre,Username,Email,Rol,Nivel,Promedio General,Asistencia (%)\n';
     users.forEach(u => {
-      csv += `"${u.id}","${u.nombre}","${u.username}","${u.email}","${u.role}","${u.nivel}"\n`;
+      const uGrades = gradesRes.rows.filter(g => g.studentId === u.id);
+      const avgGrade = uGrades.length ? (uGrades.reduce((a,b)=>a+parseFloat(b.nota),0)/uGrades.length).toFixed(1) : 'N/A';
+      
+      const uAtt = attRes.rows.filter(a => a.studentId === u.id);
+      const totalAtt = uAtt.length;
+      const presentAtt = uAtt.filter(a => a.status === 'presente').length;
+      const avgAtt = totalAtt > 0 ? Math.round((presentAtt/totalAtt)*100) + '%' : 'N/A';
+
+      csv += `"${u.id}","${u.nombre}","${u.username}","${u.email}","${u.role}","${u.nivel}","${avgGrade}","${avgAtt}"\n`;
     });
 
-    res.header('Content-Type', 'text/csv');
+    res.header('Content-Type', 'text/csv; charset=utf-8');
     res.attachment('exportacion_ifdp.csv');
-    res.send(csv);
-  } catch (err) {
+    res.send('\uFEFF' + csv); // Agrega BOM para Excel
+  } catch(err) {
     console.error(err);
     res.status(500).send('Error');
   }
@@ -450,6 +463,28 @@ app.post('/api/admin/users', authRole(['admin']), async (req, res) => {
 });
 
 // Eliminar usuario
+app.put('/api/admin/users/:id', authRole(['admin']), async (req, res) => {
+  const { nombre, username, email, role, nivel, password } = req.body;
+  try {
+    if (password && password.trim() !== '') {
+      const hash = bcrypt.hashSync(password, 10);
+      await pool.query(
+        'UPDATE users SET nombre = $1, username = $2, email = $3, role = $4, nivel = $5, password_hash = $6 WHERE id = $7',
+        [nombre, username, email, role, nivel, hash, req.params.id]
+      );
+    } else {
+      await pool.query(
+        'UPDATE users SET nombre = $1, username = $2, email = $3, role = $4, nivel = $5 WHERE id = $6',
+        [nombre, username, email, role, nivel, req.params.id]
+      );
+    }
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
 app.delete('/api/admin/users/:id', authRole(['admin']), async (req, res) => {
   try {
     // ON DELETE CASCADE en grades y attendance lo manejará si está configurado

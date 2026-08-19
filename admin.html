@@ -54,9 +54,10 @@
           <label>Usuario o Email Admin</label>
           <input type="text" id="loginUsername" placeholder="admin" required>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="position:relative;">
           <label>Contraseña</label>
           <input type="password" id="loginPassword" placeholder="••••••••" required>
+          <i class="ri-eye-line" style="position:absolute; right:12px; top:36px; cursor:pointer; color:var(--text-muted);" onclick="const p=document.getElementById('loginPassword'); p.type = p.type==='password'?'text':'password'; this.classList.toggle('ri-eye-off-line'); this.classList.toggle('ri-eye-line');"></i>
         </div>
         <div id="loginError" style="color: #DC2626; font-size: 0.85rem; margin-bottom: 15px; display: none;"></div>
         <button type="submit" class="btn btn-primary" style="width: 100%; background: #0F172A;">Entrar al Dashboard Admin</button>
@@ -365,9 +366,10 @@
             <label>Email</label>
             <input type="email" id="userEmail" placeholder="pedro@ejemplo.com" required>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="position:relative;">
             <label>Contraseña</label>
             <input type="password" id="userPassword" placeholder="••••••••" required>
+            <i class="ri-eye-line" style="position:absolute; right:12px; top:36px; cursor:pointer; color:var(--text-muted);" onclick="const p=document.getElementById('userPassword'); p.type = p.type==='password'?'text':'password'; this.classList.toggle('ri-eye-off-line'); this.classList.toggle('ri-eye-line');"></i>
           </div>
           <div class="form-group">
             <label>Rol del Usuario</label>
@@ -387,7 +389,54 @@
           </div>
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
             <button type="button" onclick="closeUserModal()" class="btn btn-outline">Cancelar</button>
-            <button type="submit" class="btn btn-dark">Crear Usuario</button>
+            <button type="submit" class="btn btn-primary">Registrar Usuario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL EDITAR USUARIO -->
+    <div id="editUserModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:480px;">
+        <h3 style="margin-bottom: 20px;">Editar Usuario</h3>
+        <form id="editUserForm">
+          <input type="hidden" id="editUserId">
+          <div class="form-group">
+            <label>Nombre Completo</label>
+            <input type="text" id="editUserNombre" required>
+          </div>
+          <div class="form-group">
+            <label>Nombre de Usuario</label>
+            <input type="text" id="editUserUsername" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="editUserEmail" required>
+          </div>
+          <div class="form-group" style="position:relative;">
+            <label>Nueva Contraseña (Dejar en blanco para no cambiar)</label>
+            <input type="password" id="editUserPassword" placeholder="••••••••">
+            <i class="ri-eye-line" style="position:absolute; right:12px; top:36px; cursor:pointer;" onclick="const p=document.getElementById('editUserPassword'); p.type = p.type==='password'?'text':'password'; this.classList.toggle('ri-eye-off-line'); this.classList.toggle('ri-eye-line');"></i>
+          </div>
+          <div class="form-group">
+            <label>Rol del Usuario</label>
+            <select id="editUserRole" required>
+              <option value="student">Estudiante</option>
+              <option value="paidagogo">Paidagogo (Profesor)</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nivel de Discipulado</label>
+            <select id="editUserNivel">
+              <option value="Nivel 1: Corderitos">Nivel 1: Corderitos</option>
+              <option value="Nivel 2: Tekníon">Nivel 2: Tekníon</option>
+              <option value="Nivel 3: Neaniskos">Nivel 3: Neaniskos</option>
+            </select>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+            <button type="button" onclick="closeEditUserModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Cambios</button>
           </div>
         </form>
       </div>
@@ -506,6 +555,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="badge-role role-${u.role}">${u.role}</span>
+            <button onclick="event.stopPropagation(); openEditUserModal('${u.id}')" style="background:none; border:none; color:#0284C7; cursor:pointer;" title="Editar"><i class="ri-edit-line"></i></button>
             <button onclick="event.stopPropagation(); deleteUser('${u.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer;" title="Eliminar"><i class="ri-delete-bin-line"></i></button>
           </div>
         </div>
@@ -778,6 +828,44 @@
         body: JSON.stringify(payload)
       });
       if (res.ok) { closeUserModal(); loadOverview(); }
+    });
+
+    function openEditUserModal(id) {
+      const u = adminData.users.find(x => x.id === id);
+      if(!u) return;
+      document.getElementById('editUserId').value = u.id;
+      document.getElementById('editUserNombre').value = u.nombre;
+      document.getElementById('editUserUsername').value = u.username;
+      document.getElementById('editUserEmail').value = u.email;
+      document.getElementById('editUserRole').value = u.role;
+      document.getElementById('editUserNivel').value = u.nivel || 'Nivel 1: Corderitos';
+      document.getElementById('editUserPassword').value = '';
+      document.getElementById('editUserModal').style.display = 'flex';
+    }
+
+    function closeEditUserModal() {
+      document.getElementById('editUserModal').style.display = 'none';
+      document.getElementById('editUserForm').reset();
+    }
+
+    document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editUserId').value;
+      const payload = {
+        nombre: document.getElementById('editUserNombre').value,
+        username: document.getElementById('editUserUsername').value,
+        email: document.getElementById('editUserEmail').value,
+        role: document.getElementById('editUserRole').value,
+        nivel: document.getElementById('editUserNivel').value,
+        password: document.getElementById('editUserPassword').value
+      };
+      const res = await fetch('/api/admin/users/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) { closeEditUserModal(); loadOverview(); }
+      else alert('Error al editar usuario');
     });
 
     async function deleteUser(id) {
