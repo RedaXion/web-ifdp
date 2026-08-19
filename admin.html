@@ -90,6 +90,30 @@
         </select>
       </div>
 
+      <!-- RECUADRO DE ESTADÍSTICAS -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:16px; margin-bottom:28px;">
+        <div style="background:white; border:1px solid var(--border-light); border-radius:var(--radius-md); padding:20px; text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:2rem; font-weight:800; color:#0284C7;" id="statTotal">—</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Visitas Totales</div>
+        </div>
+        <div style="background:white; border:1px solid var(--border-light); border-radius:var(--radius-md); padding:20px; text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:2rem; font-weight:800; color:#16A34A;" id="statToday">—</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Visitas Hoy</div>
+        </div>
+        <div style="background:white; border:1px solid var(--border-light); border-radius:var(--radius-md); padding:20px; text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:2rem; font-weight:800; color:#EA580C;" id="statWeek">—</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Visitas Esta Semana</div>
+        </div>
+        <div style="background:#0F172A; border-radius:var(--radius-md); padding:20px; text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:2rem; font-weight:800; color:#34D399;" id="statActive">—</div>
+          <div style="font-size:0.8rem; color:rgba(255,255,255,0.6); margin-top:4px;">Usuarios Activos Ahora</div>
+        </div>
+        <div style="background:white; border:1px solid var(--border-light); border-radius:var(--radius-md); padding:20px; text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:2rem; font-weight:800; color:#7C3AED;" id="statStudents">—</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Alumnos en la Escuela</div>
+        </div>
+      </div>
+
       <div class="admin-grid">
         
         <!-- Panel de Clases & Videos -->
@@ -964,7 +988,24 @@
       window.open(url, '_blank');
     }
 
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        if (!res.ok) return;
+        const s = await res.json();
+        document.getElementById('statTotal').textContent = s.totalVisits.toLocaleString();
+        document.getElementById('statToday').textContent = s.todayVisits.toLocaleString();
+        document.getElementById('statWeek').textContent = s.weekVisits.toLocaleString();
+        document.getElementById('statActive').textContent = s.activeNow;
+        if (document.getElementById('statStudents')) {
+          document.getElementById('statStudents').textContent = s.studentCount;
+        }
+      } catch(e) {}
+    }
+
     checkAuth();
+    loadStats();
+    setInterval(loadStats, 30000); // auto-refresh cada 30s
   </script>
 </body>
 </html>

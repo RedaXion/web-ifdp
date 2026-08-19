@@ -37,6 +37,47 @@ const SUPERADMIN_EMAIL = 'chris.rodval@gmail.com';
 // Servir la web principal de la iglesia
 app.use(express.static(path.join(__dirname)));
 
+// --- Visit & Active User Tracking ---
+const activeSessions = new Map(); // sessionId -> lastSeen timestamp
+
+app.use((req, res, next) => {
+  // Only count HTML page requests (not API/assets)
+  if (req.path.endsWith('.html') || req.path === '/') {
+    const sid = req.session?.id || req.ip;
+    activeSessions.set(sid, Date.now());
+    // Record visit asynchronously (non-blocking)
+    pool.query('INSERT INTO page_visits (session_id) VALUES ($1)', [sid]).catch(() => {});
+  }
+  next();
+});
+
+// Clean stale active sessions every 30s (inactive > 5 min)
+setInterval(() => {
+  const cutoff = Date.now() - 5 * 60 * 1000;
+  for (const [sid, ts] of activeSessions.entries()) {
+    if (ts < cutoff) activeSessions.delete(sid);
+  }
+}, 30000);
+
+app.get('/api/admin/stats', authRole(['admin']), async (req, res) => {
+  try {
+    const total = await pool.query('SELECT COUNT(*) FROM page_visits');
+    const today = await pool.query("SELECT COUNT(*) FROM page_visits WHERE visited_at >= CURRENT_DATE");
+    const week = await pool.query("SELECT COUNT(*) FROM page_visits WHERE visited_at >= date_trunc('week', CURRENT_DATE)");
+    const students = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'student'");
+    res.json({
+      totalVisits: parseInt(total.rows[0].count),
+      todayVisits: parseInt(today.rows[0].count),
+      weekVisits: parseInt(week.rows[0].count),
+      activeNow: activeSessions.size,
+      studentCount: parseInt(students.rows[0].count)
+    });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+});
+
 // Helper helper para extract youtube ID
 function getYoutubeId(url) {
   if (!url) return '';
