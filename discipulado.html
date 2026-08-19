@@ -175,7 +175,7 @@
               <a href="${zoomLink}" target="_blank" class="btn btn-primary" style="background:#0284C7; font-size:0.85rem;"><i class="ri-vidicon-line"></i> Unirse a Zoom en Vivo</a>
               ${c.pptUrl ? `<a href="${c.pptUrl}" target="_blank" class="btn btn-outline" style="font-size:0.85rem;"><i class="ri-file-ppt-2-line text-orange"></i> Ver PPT</a>` : ''}
             </div>
-            ${c.anexosYoutube ? `<div style="margin-top:14px;"><strong style="font-size:0.85rem; color:var(--text-secondary);">Videos complementarios:</strong>${c.anexosYoutube.split(',').filter(Boolean).map((url,i)=>{const yid=url.trim().match(/(?:v=|youtu\\.be\\/)([^&?]+)/)?.[1]||url.trim();return `<a href="https://youtube.com/watch?v=${yid}" target="_blank" style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:0.85rem;color:#0284C7;"><i class="ri-youtube-line" style="color:#EA4335;"></i>Video complementario ${i+1}</a>`}).join('')}</div>` : ''}
+            ${c.anexosYoutube ? `<div style="margin-top:14px;"><strong style="font-size:0.85rem; color:var(--text-secondary);">Videos complementarios:</strong>${c.anexosYoutube.split(',').filter(Boolean).map((url,i)=>{url=url.trim(); let yid=url; if(url.includes('v=')) yid=url.split('v=')[1].split('&')[0]; else if(url.includes('youtu.be/')) yid=url.split('youtu.be/')[1].split('?')[0]; return `<a href="https://youtube.com/watch?v=${yid}" target="_blank" style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:0.85rem;color:#0284C7;"><i class="ri-youtube-line" style="color:#EA4335;"></i>Video complementario ${i+1}</a>`}).join('')}</div>` : ''}
           </div>
         </div>
       `).join('');
