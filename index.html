@@ -106,11 +106,11 @@
             </div>
             <h1 class="hero-title">IGLESIA FAMILIAS DE PAZ</h1>
             <p class="hero-subtitle">
-              "Un lugar para encontrarte con Dios, crecer en familia y vivir tu propósito."
+              "Miles vienen caminando a casa, y los estamos esperando"
             </p>
             <div class="hero-buttons">
               <a href="#ubicacion" class="btn btn-primary">
-                <i class="ri-user-follow-line"></i> Quiero visitarnos
+                <i class="ri-user-follow-line"></i> Quiero visitarlos
               </a>
               <a href="#" data-link="youtube" target="_blank" rel="noopener" class="btn btn-secondary">
                 <i class="ri-youtube-fill"></i> Ver en YouTube
@@ -178,11 +178,11 @@
               <div class="schedule-card-bg-overlay"></div>
             </div>
             <div class="schedule-card-inner">
-              <span class="schedule-tag tag-online">Vía Zoom</span>
+              <span class="schedule-tag tag-online">Vía WhatsApp</span>
               <h3 class="schedule-title">Oración Online</h3>
               <p class="schedule-time">Miércoles · 20:30 PM</p>
-              <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
-                <i class="ri-vidicon-line"></i> Unirme a Zoom
+              <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
+                <i class="ri-whatsapp-line"></i> Contactar por WhatsApp
               </a>
             </div>
           </div>
@@ -393,12 +393,12 @@
                   <i class="ri-time-line"></i> 20:30 PM
                 </div>
                 <div class="reunion-detail-item">
-                  <i class="ri-video-line"></i> Online · Zoom
+                  <i class="ri-whatsapp-line"></i> Online · WhatsApp
                 </div>
               </div>
             </div>
-            <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-primary">
-              <i class="ri-vidicon-fill"></i> Unirme a Zoom
+            <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-primary">
+              <i class="ri-whatsapp-fill"></i> Contactar por WhatsApp
             </a>
           </div>
 
@@ -724,6 +724,32 @@
           </div>
 
         </div>
+
+        <!-- Caja de Motivos de Oración -->
+        <div class="prayer-request-container" style="max-width: 600px; margin: 50px auto 0 auto; background: var(--bg-main); padding: 32px 28px; border-radius: var(--radius-md); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div style="width: 50px; height: 50px; background: rgba(255, 148, 31, 0.1); color: var(--accent-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 1.5rem;">
+              <i class="ri-heart-3-line"></i>
+            </div>
+            <h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--text-primary);">Envíanos tu Motivo de Oración</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">¿Tienes alguna petición especial? Escríbela aquí. Estaremos orando por ti y tu familia de forma confidencial.</p>
+          </div>
+          <form id="prayerRequestForm" style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="prayerName" style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); text-align: left;">Tu Nombre (Opcional)</label>
+              <input type="text" id="prayerName" placeholder="Ej. Juan Pérez" style="padding: 10px 14px; border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.95rem; width: 100%; background: var(--bg-card); color: var(--text-primary);">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="prayerMessage" style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); text-align: left;">Motivo de Oración</label>
+              <textarea id="prayerMessage" rows="4" placeholder="Escribe aquí tu petición o motivo de oración..." required style="padding: 10px 14px; border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.95rem; font-family: inherit; resize: vertical; width: 100%; background: var(--bg-card); color: var(--text-primary);"></textarea>
+            </div>
+            <div id="prayerFormStatus" style="font-size: 0.9rem; text-align: center; display: none;"></div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px; display: flex; align-items: center; gap: 8px;">
+              <i class="ri-send-plane-fill"></i> Enviar Petición
+            </button>
+          </form>
+        </div>
+
       </div>
     </section>
 

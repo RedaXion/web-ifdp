@@ -147,6 +147,15 @@
 
       </div>
 
+      <!-- Panel de Motivos de Oración -->
+      <div class="admin-grid" style="margin-top: 30px;">
+        <div class="admin-card" style="grid-column: span 2;">
+          <h3 style="margin-bottom: 20px;"><i class="ri-heart-line text-orange"></i> Motivos de Oración</h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom: 15px;">Listado de peticiones y motivos de oración enviados desde la web principal.</p>
+          <div id="adminPrayerRequestsList" style="display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 10px;"></div>
+        </div>
+      </div>
+
 
     </div>
 
@@ -526,7 +535,7 @@
       loadOverview();
     }
 
-    let adminData = { users: [], classes: [], evaluations: [], grades: [], attendance: [], noas: [] };
+    let adminData = { users: [], classes: [], evaluations: [], grades: [], attendance: [], noas: [], prayerRequests: [] };
 
     async function loadOverview() {
       try {
@@ -630,6 +639,21 @@
         `).join('');
       }
 
+      // Render Prayer Requests
+      if (data.prayerRequests) {
+        document.getElementById('adminPrayerRequestsList').innerHTML = data.prayerRequests.length === 0 
+          ? `<p style="font-size:0.9rem; color:var(--text-secondary); text-align:center; padding: 20px; width:100%;">No hay motivos de oración registrados.</p>`
+          : data.prayerRequests.map(pr => `
+            <div style="background:#FFF1F2; border:1px solid #FFE4E6; border-left:4px solid #F43F5E; border-radius:var(--radius-md); padding:16px; display:flex; justify-content:space-between; align-items:flex-start; gap:15px; text-align:left;">
+              <div>
+                <strong style="color:#E11D48;"><i class="ri-user-heart-line"></i> ${pr.nombre}</strong> 
+                <span style="font-size:0.75rem; color:var(--text-muted); margin-left: 8px;">${new Date(pr.fecha).toLocaleString()}</span>
+                <p style="font-size:0.9rem; color:var(--text-primary); margin:8px 0 0 0; white-space:pre-wrap;">${pr.motivo}</p>
+              </div>
+              <button onclick="event.stopPropagation(); deletePrayerRequest(${pr.id})" style="background:none; border:none; color:#E11D48; cursor:pointer;" title="Eliminar Petición"><i class="ri-delete-bin-line"></i></button>
+            </div>
+          `).join('');
+      }
 
     }
 
@@ -973,6 +997,16 @@
       });
       if(res.ok) { closeEditAttendanceModal(); loadOverview(); }
     });
+
+    async function deletePrayerRequest(id) {
+      if(!confirm('¿Estás seguro de eliminar este motivo de oración?')) return;
+      const res = await fetch('/api/admin/prayer-requests/' + id, { method: 'DELETE' });
+      if(res.ok) {
+        loadOverview();
+      } else {
+        alert('Error al eliminar el motivo de oración.');
+      }
+    }
 
     async function logout() {
       await fetch('/api/logout', { method: 'POST' });

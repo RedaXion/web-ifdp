@@ -345,11 +345,13 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
     const classesRes = await pool.query('SELECT id, titulo, nivel, youtube_id as "youtubeId", ppt_url as "pptUrl", apunte_url as "apunteUrl", descripcion, anexos_youtube as "anexosYoutube" FROM classes ORDER BY created_at ASC');
     const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations ORDER BY created_at ASC');
     const noaRes = await pool.query('SELECT id, pedagogo_id as "pedagogoId", evaluacion_id as "evaluacionId", archivo_url as "archivoUrl", fecha_subida as "fechaSubida" FROM nota_noa');
+    const prayerRes = await pool.query('SELECT id, nombre, motivo, fecha FROM prayer_requests ORDER BY fecha DESC');
 
     const grades = gradesRes.rows.map(g => ({...g, nota: parseFloat(g.nota)}));
     const attendance = attRes.rows;
     const noas = noaRes.rows;
     const evaluations = evalRes.rows;
+    const prayerRequests = prayerRes.rows;
 
     const usersWithStats = usersRes.rows.map(u => {
       let uGrades = grades.filter(g => g.studentId === u.id);
@@ -367,7 +369,8 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
       evaluations,
       grades,
       attendance,
-      noas
+      noas,
+      prayerRequests
     });
   } catch(err) {
     console.error(err);
@@ -603,6 +606,34 @@ app.delete('/api/admin/classes/:id', authRole(['admin']), async (req, res) => {
 app.delete('/api/admin/evaluations/:id', authRole(['admin']), async (req, res) => {
   try {
     await pool.query('DELETE FROM evaluations WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// Motivos de oración
+app.post('/api/prayer-requests', async (req, res) => {
+  const { nombre, motivo } = req.body;
+  if (!motivo) {
+    return res.status(400).json({ error: 'El motivo de oración es requerido' });
+  }
+  try {
+    await pool.query(
+      'INSERT INTO prayer_requests (nombre, motivo) VALUES ($1, $2)',
+      [nombre || 'Anónimo', motivo]
+    );
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+app.delete('/api/admin/prayer-requests/:id', authRole(['admin']), async (req, res) => {
+  try {
+    await pool.query('DELETE FROM prayer_requests WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch(err) {
     console.error(err);

@@ -78,6 +78,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 4. Inject Dynamic Official Configuration into Links
   injectOfficialLinks();
+
+  // 5. Submit Prayer Request Form
+  const prayerForm = document.getElementById('prayerRequestForm');
+  if (prayerForm) {
+    prayerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('prayerName').value.trim();
+      const motivo = document.getElementById('prayerMessage').value.trim();
+      const statusEl = document.getElementById('prayerFormStatus');
+      
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'var(--text-secondary)';
+      statusEl.textContent = 'Enviando petición...';
+      
+      try {
+        const response = await fetch('/api/prayer-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nombre, motivo })
+        });
+        
+        if (response.ok) {
+          statusEl.style.color = '#16A34A';
+          statusEl.textContent = '✅ Tu petición ha sido enviada. Estaremos orando por ti.';
+          prayerForm.reset();
+        } else {
+          statusEl.style.color = '#DC2626';
+          statusEl.textContent = '❌ Hubo un problema al enviar tu petición. Por favor, intenta de nuevo.';
+        }
+      } catch (err) {
+        console.error(err);
+        statusEl.style.color = '#DC2626';
+        statusEl.textContent = '❌ Error de conexión. Por favor, intenta de nuevo.';
+      }
+    });
+  }
 });
 
 function injectOfficialLinks() {
