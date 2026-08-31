@@ -18,12 +18,25 @@
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th, td { padding: 14px 20px; border-bottom: 1px solid var(--border-light); }
     th { background: var(--bg-main); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); }
+
+    .portal-header-flex { display: flex; justify-content: space-between; align-items: center; }
+    .paida-dashboard-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+
+    @media (max-width: 768px) {
+      .portal-header-flex { flex-direction: column; gap: 12px; text-align: center; }
+      #userHeaderActions { flex-direction: column !important; align-items: center !important; gap: 8px !important; margin-top: 5px; }
+      .paida-dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
+      .auth-card { margin: 40px auto; padding: 24px 16px; }
+      th, td { padding: 10px 12px; font-size: 0.82rem; }
+      .table-container { overflow-x: auto; }
+    }
   </style>
 </head>
+
 <body class="portal-body">
 
   <header class="portal-header">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="container portal-header-flex">
       <a href="/" class="logo-link">
         <div class="logo-icon" style="background: linear-gradient(135deg, #0284C7, #0369A1);"><i class="ri-user-star-line"></i></div>
         <div class="logo-text">
@@ -75,7 +88,7 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;">
+      <div class="paida-dashboard-grid">
         
         <!-- Columna Clases -->
         <div>

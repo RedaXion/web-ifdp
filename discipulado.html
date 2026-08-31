@@ -21,12 +21,22 @@
     .video-container iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
     .class-content { padding: 24px; }
     .grade-badge { font-size: 1.5rem; font-weight: 800; color: var(--accent-orange); }
+
+    .portal-header-flex { display: flex; justify-content: space-between; align-items: center; }
+
+    @media (max-width: 768px) {
+      .portal-header-flex { flex-direction: column; gap: 15px; text-align: center; }
+      #userHeaderActions { flex-direction: column; align-items: center; gap: 8px; margin-top: 5px; }
+      #userHeaderActions span { margin-right: 0 !important; margin-bottom: 6px; }
+      .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
+      .auth-card { margin: 40px auto; padding: 24px 16px; }
+    }
   </style>
 </head>
 <body class="portal-body">
 
   <header class="portal-header">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="container portal-header-flex">
       <a href="/" class="logo-link">
         <div class="logo-icon"><i class="ri-book-open-line"></i></div>
         <div class="logo-text">
