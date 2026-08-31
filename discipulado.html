@@ -77,11 +77,27 @@
 
     <!-- DASHBOARD ESTUDIANTE -->
     <div id="dashboardView" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <div>
-          <span class="section-badge"><i class="ri-graduation-cap-line"></i> Estudiante Activo</span>
-          <h1 id="studentNameTitle">Bienvenido</h1>
-          <p id="studentNivelSubtitle">Nivel 1: Corderitos</p>
+      <div style="margin-bottom: 20px;">
+        <span class="section-badge"><i class="ri-graduation-cap-line"></i> Estudiante Activo</span>
+        <h1 id="studentNameTitle" style="margin: 8px 0 2px 0;">Bienvenido</h1>
+        <p id="studentNivelSubtitle" style="color: var(--text-secondary); margin-bottom: 16px;">Nivel 1: Corderitos</p>
+
+        <!-- Resumen rápido: Promedio & Asistencia -->
+        <div id="studentStatsBar" style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px;">
+          <div style="background: white; border: 1px solid var(--border-light); border-left: 4px solid var(--accent-orange); border-radius: var(--radius-md); padding: 14px 22px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); flex: 1; min-width: 130px;">
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em;">Promedio</div>
+              <div id="statAvgGrade" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-orange); line-height: 1.1;">—</div>
+            </div>
+            <i class="ri-bar-chart-fill" style="font-size: 1.8rem; color: rgba(255,148,31,0.2);"></i>
+          </div>
+          <div style="background: white; border: 1px solid var(--border-light); border-left: 4px solid #0284C7; border-radius: var(--radius-md); padding: 14px 22px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); flex: 1; min-width: 130px;">
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em;">Asistencia</div>
+              <div id="statAttendance" style="font-size: 1.8rem; font-weight: 800; color: #0284C7; line-height: 1.1;">—</div>
+            </div>
+            <i class="ri-calendar-check-fill" style="font-size: 1.8rem; color: rgba(2,132,199,0.15);"></i>
+          </div>
         </div>
       </div>
 
@@ -168,8 +184,17 @@
       if(user.nivel && user.nivel.includes('Nivel 3')) {
         zoomLink = 'https://us06web.zoom.us/j/88054596656?pwd=Ces8EsjuxL5zufNdhrsiu7XPMScumH.1';
       }
+      // Llenar barra de resumen (promedio + asistencia)
+      const totalAtt = data.attendance ? data.attendance.length : 0;
+      const presentAtt = data.attendance ? data.attendance.filter(a => a.status === 'presente').length : 0;
+      const attPercent = totalAtt > 0 ? Math.round((presentAtt / totalAtt) * 100) + '%' : 'N/A';
+      const avgGrade = data.grades && data.grades.length > 0
+        ? (data.grades.reduce((acc, g) => acc + g.nota, 0) / data.grades.length).toFixed(1)
+        : 'N/A';
+      document.getElementById('statAvgGrade').textContent = avgGrade;
+      document.getElementById('statAttendance').textContent = attPercent;
 
-      // Render Clases (reverse chronological)
+
       const classesDiv = document.getElementById('classesList');
       const sortedClasses = (data.classes || []).slice().reverse();
       classesDiv.innerHTML = sortedClasses.map(c => `
@@ -190,42 +215,21 @@
         </div>
       `).join('');
 
-      // Render Notas y Asistencia
+      // Render Notas y Asistencia (detalle individual, el resumen ya está arriba)
       const gradesDiv = document.getElementById('gradesContainer');
-      const totalAtt = data.attendance ? data.attendance.length : 0;
-      const presentAtt = data.attendance ? data.attendance.filter(a => a.status === 'presente').length : 0;
-      const attPercent = totalAtt > 0 ? Math.round((presentAtt / totalAtt) * 100) + '%' : 'N/A';
 
       if (!data.grades || data.grades.length === 0) {
-        gradesDiv.innerHTML = `
-          <div style="text-align:center; padding-bottom: 20px; margin-bottom: 20px;">
-            <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">ASISTENCIA GENERAL</div>
-            <div class="grade-badge" style="color:#0284C7;">${attPercent}</div>
-          </div>
-          <p>Aún no hay calificaciones registradas.</p>`;
+        gradesDiv.innerHTML = `<p style="color:var(--text-secondary);">Aún no hay calificaciones registradas.</p>`;
       } else {
-        const avg = (data.grades.reduce((acc, g) => acc + g.nota, 0) / data.grades.length).toFixed(1);
-        gradesDiv.innerHTML = `
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center; padding-bottom: 20px; border-bottom: 1px solid var(--border-light); margin-bottom: 20px;">
-            <div>
-              <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">PROMEDIO</div>
-              <div class="grade-badge">${avg}</div>
+        gradesDiv.innerHTML = data.grades.map(g => `
+          <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed var(--border-light);">
+            <div style="display:flex; justify-content:space-between; font-weight:700;">
+              <span>${g.unidad}</span>
+              <span style="color:var(--accent-orange); font-size:1.1rem;">${g.nota} <span style="font-size:0.8rem; color:var(--text-secondary);">(${g.porcentaje}%)</span></span>
             </div>
-            <div>
-              <div style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">ASISTENCIA</div>
-              <div class="grade-badge" style="color:#0284C7;">${attPercent}</div>
-            </div>
+            ${g.observaciones ? `<div style="font-size:0.85rem; font-style:italic; margin-top:4px;">"${g.observaciones}"</div>` : ''}
           </div>
-          ${data.grades.map(g => `
-            <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed var(--border-light);">
-              <div style="display:flex; justify-content:space-between; font-weight:700;">
-                <span>${g.unidad}</span>
-                <span style="color:var(--accent-orange); font-size:1.1rem;">${g.nota} <span style="font-size:0.8rem; color:var(--text-secondary);">(${g.porcentaje}%)</span></span>
-              </div>
-              ${g.observaciones ? `<div style="font-size:0.85rem; font-style:italic; margin-top:4px;">"${g.observaciones}"</div>` : ''}
-            </div>
-          `).join('')}
-        `;
+        `).join('');
       }
     }
 
