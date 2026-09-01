@@ -22,6 +22,7 @@ async function initDB() {
     // Migrations
     try {
       await pool.query('ALTER TABLE classes ADD COLUMN IF NOT EXISTS anexos_youtube TEXT');
+      await pool.query('ALTER TABLE classes ADD COLUMN IF NOT EXISTS visible BOOLEAN DEFAULT TRUE');
       await pool.query(`CREATE TABLE IF NOT EXISTS page_visits (
         id SERIAL PRIMARY KEY,
         visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS classes (
     apunte_url TEXT,
     descripcion TEXT,
     anexos_youtube TEXT,
+    visible BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -307,6 +307,10 @@
             <label>Videos Anexos de YouTube (uno por línea)</label>
             <textarea id="classAnexos" rows="3" placeholder="https://youtube.com/watch?v=..."></textarea>
           </div>
+          <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+            <input type="checkbox" id="classVisible" style="width:auto; cursor:pointer;">
+            <label for="classVisible" style="margin:0; cursor:pointer; font-weight:600; color:var(--text-main);">Hacer visible para estudiantes inmediatamente</label>
+          </div>
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
             <button type="button" onclick="closeClassModal()" class="btn btn-outline">Cancelar</button>
             <button type="submit" class="btn btn-primary">Publicar Clase</button>
@@ -352,6 +356,10 @@
           <div class="form-group">
             <label>Videos Anexos de YouTube (uno por línea)</label>
             <textarea id="editClassAnexos" rows="3" placeholder="https://youtube.com/watch?v=..."></textarea>
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+            <input type="checkbox" id="editClassVisible" style="width:auto; cursor:pointer;">
+            <label for="editClassVisible" style="margin:0; cursor:pointer; font-weight:600; color:var(--text-main);">Visible para estudiantes</label>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
             <button type="button" onclick="closeEditClassModal()" class="btn btn-outline">Cancelar</button>
@@ -572,19 +580,26 @@
       const filteredUsers = filterNivelText ? data.users.filter(u => u.nivel === filterNivelText || u.role === 'admin') : data.users;
 
       // Render Classes
-      document.getElementById('adminClassesList').innerHTML = filteredClasses.map(c => `
+      document.getElementById('adminClassesList').innerHTML = filteredClasses.map(c => {
+        const isVis = c.visible !== false;
+        return `
         <div style="background:#EFF6FF; border:1px solid #DBEAFE; border-left:4px solid #2563EB; border-radius:var(--radius-md); padding:16px; margin-bottom:12px; transition:all 0.2s;" onmouseover="this.style.background='#DBEAFE'" onmouseout="this.style.background='#EFF6FF'">
           <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="openAdminClassDetail('${c.id}')">
             <h4 style="margin:0;">${c.titulo}</h4>
             <span style="font-size:0.75rem; background:rgba(37,99,235,0.1); color:#2563EB; font-weight:700; padding:2px 8px; border-radius:4px;">${c.nivel}</span>
           </div>
           <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 8px 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer;" onclick="openAdminClassDetail('${c.id}')">${c.descripcion || ''}</p>
-          <div style="display:flex; justify-content:flex-end; gap: 12px;">
-            <button onclick="openEditClassModal('${c.id}')" style="background:none; border:none; color:#0284C7; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-edit-line"></i> Editar clase</button>
-            <button onclick="deleteClass('${c.id}')" style="background:none; border:none; color:#DC2626; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-delete-bin-line"></i> Eliminar clase</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px dashed #BFDBFE;">
+            <button onclick="toggleClassVisibility('${c.id}')" class="btn" style="padding:4px 10px; font-size:0.78rem; border-radius:20px; font-weight:600; cursor:pointer; background:${isVis ? '#DCFCE7' : '#FEE2E2'}; color:${isVis ? '#166534' : '#991B1B'}; border:1px solid ${isVis ? '#86EFAC' : '#FCA5A5'}; display:flex; align-items:center; gap:6px;" title="Haz clic para cambiar la visibilidad para estudiantes">
+              <i class="${isVis ? 'ri-eye-line' : 'ri-eye-off-line'}"></i> ${isVis ? 'Visible para estudiantes' : 'Oculto para estudiantes'}
+            </button>
+            <div style="display:flex; gap: 12px;">
+              <button onclick="openEditClassModal('${c.id}')" style="background:none; border:none; color:#0284C7; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-edit-line"></i> Editar clase</button>
+              <button onclick="deleteClass('${c.id}')" style="background:none; border:none; color:#DC2626; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-delete-bin-line"></i> Eliminar clase</button>
+            </div>
           </div>
         </div>
-      `).join('');
+      `;}).join('');
 
       // Render Users
       document.getElementById('adminUsersList').innerHTML = filteredUsers.map(u => `
@@ -817,7 +832,8 @@
         pptUrl: document.getElementById('classPptUrl').value,
         apunteUrl: document.getElementById('classApunteUrl').value,
         descripcion: document.getElementById('classDescripcion').value,
-        anexos_youtube: document.getElementById('classAnexos').value.split('\n').map(l=>l.trim()).filter(Boolean).join(',')
+        anexos_youtube: document.getElementById('classAnexos').value.split('\n').map(l=>l.trim()).filter(Boolean).join(','),
+        visible: document.getElementById('classVisible').checked
       };
       const res = await fetch('/api/admin/classes', {
         method: 'POST',
@@ -838,6 +854,7 @@
       document.getElementById('editClassApunteUrl').value = c.apunteUrl || '';
       document.getElementById('editClassDescripcion').value = c.descripcion || '';
       document.getElementById('editClassAnexos').value = (c.anexosYoutube || '').replace(/,/g,'\n');
+      document.getElementById('editClassVisible').checked = c.visible !== false;
       document.getElementById('editClassModal').style.display = 'flex';
     }
 
@@ -856,7 +873,8 @@
         pptUrl: document.getElementById('editClassPptUrl').value,
         apunteUrl: document.getElementById('editClassApunteUrl').value,
         descripcion: document.getElementById('editClassDescripcion').value,
-        anexos_youtube: document.getElementById('editClassAnexos').value.split('\n').map(l=>l.trim()).filter(Boolean).join(',')
+        anexos_youtube: document.getElementById('editClassAnexos').value.split('\n').map(l=>l.trim()).filter(Boolean).join(','),
+        visible: document.getElementById('editClassVisible').checked
       };
       const res = await fetch('/api/admin/classes/' + id, {
         method: 'PUT',
@@ -938,6 +956,20 @@
       const res = await fetch('/api/admin/classes/' + id, { method: 'DELETE' });
       if(res.ok) loadOverview();
       else alert('Error al eliminar la clase.');
+    }
+
+    async function toggleClassVisibility(id) {
+      try {
+        const res = await fetch('/api/admin/classes/' + id + '/toggle-visibility', { method: 'PUT' });
+        if(res.ok) {
+          loadOverview();
+        } else {
+          alert('Error al cambiar la visibilidad de la clase.');
+        }
+      } catch(err) {
+        console.error(err);
+        alert('Error de conexión al cambiar la visibilidad.');
+      }
     }
 
     async function deleteEval(id) {
