@@ -1031,15 +1031,33 @@
       const status = document.getElementById('editAttStatus').value;
 
       const payload = { status, classId, studentId };
-      const endpoint = id ? ('/api/admin/attendance/' + id) : '/api/admin/attendance';
-      const method = id ? 'PUT' : 'POST';
+      const hasValidId = id && id !== 'undefined' && id !== 'null' && id !== '';
+      const endpoint = hasValidId ? ('/api/admin/attendance/' + id) : '/api/admin/attendance';
+      const method = hasValidId ? 'PUT' : 'POST';
 
-      const res = await fetch(endpoint, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if(res.ok) { closeEditAttendanceModal(); loadOverview(); }
+      try {
+        const res = await fetch(endpoint, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if(res.ok) {
+          closeEditAttendanceModal();
+          await loadOverview();
+          if (studentId && document.getElementById('adminUserDetailModal') && document.getElementById('adminUserDetailModal').style.display === 'flex') {
+            openAdminUserDetail(studentId);
+          }
+          if (classId && document.getElementById('adminAttDetailModal') && document.getElementById('adminAttDetailModal').style.display === 'flex') {
+            openAdminAttDetail(classId);
+          }
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          alert('Error al guardar asistencia: ' + (errData.error || 'Error en el servidor'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error de conexión al guardar asistencia.');
+      }
     });
 
     async function deletePrayerRequest(id) {
