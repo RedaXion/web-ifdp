@@ -556,11 +556,41 @@ app.delete('/api/admin/users/:id', authRole(['admin']), async (req, res) => {
   }
 });
 
-// Editar Asistencia
+// Editar/Crear Asistencia
 app.put('/api/admin/attendance/:id', authRole(['admin']), async (req, res) => {
-  const { status } = req.body;
+  const { status, classId, studentId } = req.body;
+  const { id } = req.params;
   try {
-    await pool.query('UPDATE attendance SET status = $1 WHERE id = $2', [status, req.params.id]);
+    if (id && id !== 'undefined' && id !== 'null' && id !== 'new') {
+      await pool.query('UPDATE attendance SET status = $1 WHERE id = $2', [status, id]);
+    } else if (classId && studentId) {
+      const attId = 'a_' + Date.now() + '_' + studentId;
+      await pool.query(
+        'INSERT INTO attendance (id, class_id, student_id, status) VALUES ($1, $2, $3, $4) ON CONFLICT (student_id, class_id) DO UPDATE SET status = EXCLUDED.status',
+        [attId, classId, studentId, status]
+      );
+    }
+    res.json({ success: true });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+app.post('/api/admin/attendance', authRole(['admin']), async (req, res) => {
+  const { id, classId, studentId, status } = req.body;
+  try {
+    if (id) {
+      await pool.query('UPDATE attendance SET status = $1 WHERE id = $2', [status, id]);
+    } else if (classId && studentId) {
+      const attId = 'a_' + Date.now() + '_' + studentId;
+      await pool.query(
+        'INSERT INTO attendance (id, class_id, student_id, status) VALUES ($1, $2, $3, $4) ON CONFLICT (student_id, class_id) DO UPDATE SET status = EXCLUDED.status',
+        [attId, classId, studentId, status]
+      );
+    } else {
+      return res.status(400).json({ error: 'Faltan datos de la clase o estudiante' });
+    }
     res.json({ success: true });
   } catch(err) {
     console.error(err);

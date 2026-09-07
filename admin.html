@@ -225,6 +225,7 @@
         <h3 style="margin-bottom: 20px;">Editar Calificación</h3>
         <form id="editGradeForm">
           <input type="hidden" id="editGradeId">
+          <input type="hidden" id="editGradeStudentId">
           <div class="form-group">
             <label>Unidad / Módulo</label>
             <input type="text" id="editGradeUnidad" required>
@@ -255,6 +256,8 @@
         <h3 style="margin-bottom: 20px;">Modificar Asistencia</h3>
         <form id="editAttendanceForm">
           <input type="hidden" id="editAttId">
+          <input type="hidden" id="editAttClassId">
+          <input type="hidden" id="editAttStudentId">
           <div class="form-group">
             <label>Estado</label>
             <select id="editAttStatus" required>
@@ -703,7 +706,7 @@
         htmlGrades += `<tr style="border-bottom:1px solid var(--border-light);">
           <td style="padding:8px;">${e.titulo}</td>
           <td style="padding:8px;">${grade ? `<span style="color:var(--accent-orange); font-weight:700;">${grade.nota}</span> <span style="font-size:0.8rem; color:var(--text-secondary);">(${grade.porcentaje}%)</span>` : '<span style="color:var(--text-muted);">Sin nota</span>'}</td>
-          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.puntajeObtenido : 0}, ${e.puntajeTotal}, '${grade ? grade.observaciones : ''}')">Editar</button></td>
+          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.puntajeObtenido : 0}, ${e.puntajeTotal}, '${grade ? grade.observaciones : ''}', '${u.id}')">Editar</button></td>
         </tr>`;
       });
       htmlGrades += '</tbody></table>';
@@ -979,8 +982,9 @@
       else alert('Error al eliminar la evaluación.');
     }
 
-    function openEditGradeModal(id, unidad, obtenido, total, obs) {
-      document.getElementById('editGradeId').value = id;
+    function openEditGradeModal(id, unidad, obtenido, total, obs, studentId) {
+      document.getElementById('editGradeId').value = id || '';
+      document.getElementById('editGradeStudentId').value = studentId || '';
       document.getElementById('editGradeUnidad').value = unidad;
       document.getElementById('editGradeObtenido').value = obtenido;
       document.getElementById('editGradeTotal').value = total;
@@ -992,14 +996,18 @@
     document.getElementById('editGradeForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('editGradeId').value;
+      const studentId = document.getElementById('editGradeStudentId').value;
       const payload = {
+        studentId,
         unidad: document.getElementById('editGradeUnidad').value,
         puntajeObtenido: document.getElementById('editGradeObtenido').value,
         puntajeTotal: document.getElementById('editGradeTotal').value,
         observaciones: document.getElementById('editGradeObservaciones').value
       };
-      const res = await fetch('/api/paidagogo/grades/' + id, {
-        method: 'PUT',
+      const url = id ? ('/api/paidagogo/grades/' + id) : '/api/paidagogo/grades';
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -1008,8 +1016,9 @@
 
     function openEditAttendanceModal(id, status, classId, studentId) {
       document.getElementById('editAttId').value = id || '';
+      document.getElementById('editAttClassId').value = classId || '';
+      document.getElementById('editAttStudentId').value = studentId || '';
       document.getElementById('editAttStatus').value = status;
-      // We will ignore classId/studentId for now since editing an existing record uses 'id'
       document.getElementById('editAttendanceModal').style.display = 'flex';
     }
     function closeEditAttendanceModal() { document.getElementById('editAttendanceModal').style.display = 'none'; }
@@ -1017,15 +1026,18 @@
     document.getElementById('editAttendanceForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('editAttId').value;
+      const classId = document.getElementById('editAttClassId').value;
+      const studentId = document.getElementById('editAttStudentId').value;
       const status = document.getElementById('editAttStatus').value;
-      if (!id) {
-        alert("El registro de asistencia no existe aún en la base de datos.");
-        return;
-      }
-      const res = await fetch('/api/admin/attendance/' + id, {
-        method: 'PUT',
+
+      const payload = { status, classId, studentId };
+      const endpoint = id ? ('/api/admin/attendance/' + id) : '/api/admin/attendance';
+      const method = id ? 'PUT' : 'POST';
+
+      const res = await fetch(endpoint, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
+        body: JSON.stringify(payload)
       });
       if(res.ok) { closeEditAttendanceModal(); loadOverview(); }
     });
