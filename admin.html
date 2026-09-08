@@ -646,15 +646,30 @@
           if (!filterNivelText) return true;
           return c.nivel === filterNivelText;
         });
-        document.getElementById('adminAttendanceList').innerHTML = filteredAttClasses.map(c => `
+        document.getElementById('adminAttendanceList').innerHTML = filteredAttClasses.map(c => {
+          const levelStudents = (data.users || []).filter(u => u.nivel === c.nivel && u.role === 'student');
+          const totalStudents = levelStudents.length;
+          const presentCount = levelStudents.filter(st => {
+            const att = (data.attendance || []).find(a => a.studentId === st.id && a.classId === c.id);
+            return att && att.status && att.status.toLowerCase() === 'presente';
+          }).length;
+          const attPct = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+          const attPctInfo = totalStudents > 0 ? `${attPct}% (${presentCount}/${totalStudents} alumnos)` : 'N/A';
+
+          return `
           <div style="background:#F0FDF4; border:1px solid #DCFCE7; border-left:4px solid #16A34A; border-radius:var(--radius-md); padding:16px; margin-bottom:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#DCFCE7'" onmouseout="this.style.background='#F0FDF4'" onclick="openAdminAttDetail('${c.id}')">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <h4 style="margin:0;">${c.titulo}</h4>
               <span style="font-size:0.75rem; background:rgba(22,163,74,0.1); color:#16A34A; font-weight:700; padding:2px 8px; border-radius:4px;">${c.nivel}</span>
             </div>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 0 0;">Ver y editar asistencia de estudiantes</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:8px;">
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin: 0;">Ver y editar asistencia de estudiantes</p>
+              <span style="font-size:0.8rem; font-weight:700; color:#15803D; background:#DCFCE7; padding:2px 10px; border-radius:12px; border:1px solid #86EFAC;">
+                <i class="ri-user-check-line"></i> Asistencia: ${attPctInfo}
+              </span>
+            </div>
           </div>
-        `).join('');
+        `;}).join('');
       }
 
       // Render Prayer Requests
@@ -747,10 +762,18 @@
     function openAdminAttDetail(id) {
       const c = adminData.classes.find(x => x.id === id);
       if(!c) return;
-      document.getElementById('adminAttDetailTitle').textContent = 'Asistencia: ' + c.titulo;
-      document.getElementById('adminAttDetailDesc').textContent = 'Nivel: ' + c.nivel;
       
       const students = adminData.users.filter(u => u.nivel === c.nivel && u.role === 'student');
+      const presentCount = students.filter(st => {
+        const att = adminData.attendance.find(a => a.studentId === st.id && a.classId === c.id);
+        return att && att.status && att.status.toLowerCase() === 'presente';
+      }).length;
+      const totalStudents = students.length;
+      const attPct = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+      const attPctInfo = totalStudents > 0 ? `${attPct}% (${presentCount}/${totalStudents} alumnos)` : 'N/A';
+
+      document.getElementById('adminAttDetailTitle').textContent = 'Asistencia: ' + c.titulo;
+      document.getElementById('adminAttDetailDesc').textContent = 'Nivel: ' + c.nivel + ' | Asistencia del curso: ' + attPctInfo;
       let html = '<table style="width:100%; text-align:left; border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--border-light);"><th style="padding:8px;">Estudiante</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Acción</th></tr></thead><tbody>';
       
       students.forEach(st => {
