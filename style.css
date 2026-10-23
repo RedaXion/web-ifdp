@@ -411,7 +411,8 @@ p {
   box-shadow: var(--shadow-lg);
 }
 
-.hero-bg {
+.hero-bg,
+video.hero-bg {
   position: absolute;
   top: 0;
   left: 0;
@@ -421,6 +422,7 @@ p {
   object-position: center;
   transform: scale(1.02);
   transition: transform 10s ease;
+  pointer-events: none;
 }
 
 .hero-card:hover .hero-bg {
@@ -435,9 +437,9 @@ p {
   height: 100%;
   background: linear-gradient(
     180deg,
-    rgba(15, 23, 42, 0.25) 0%,
-    rgba(15, 23, 42, 0.65) 50%,
-    rgba(15, 23, 42, 0.92) 100%
+    rgba(38, 14, 56, 0.42) 0%,
+    rgba(25, 10, 42, 0.70) 50%,
+    rgba(14, 6, 26, 0.94) 100%
   );
 }
 
@@ -522,8 +524,8 @@ p {
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
 }
 
 .schedule-card {
@@ -651,8 +653,13 @@ p {
 }
 
 .tag-online {
-  background-color: #FEE2E2;
-  color: #DC2626;
+  background-color: #EDE9FE;
+  color: #6D28D9;
+}
+
+.tag-zoom {
+  background-color: #E0E7FF;
+  color: #3730A3;
 }
 
 .schedule-title {

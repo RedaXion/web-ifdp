@@ -71,7 +71,6 @@
             </ul>
           </li>
           <li><a href="#ministerios" class="nav-link">Ministerios</a></li>
-          <li><a href="cuna-profetica.html" class="nav-link">Cuna Profética</a></li>
           <li><a href="#predicaciones" class="nav-link">Predicaciones</a></li>
           <li><a href="#ubicacion" class="nav-link">Ubicación</a></li>
           <li><a href="#contacto" class="nav-link">Contacto</a></li>
@@ -97,7 +96,9 @@
     <section class="hero-section" id="inicio">
       <div class="container">
         <div class="hero-card">
-          <img src="images/1.jpeg" alt="Iglesia Familias de Paz Adoración" class="hero-bg" style="object-position: center 30%;">
+          <video class="hero-bg" autoplay loop muted playsinline poster="images/1.jpeg">
+            <source src="videos/bienvenida.mp4" type="video/mp4">
+          </video>
           <div class="hero-overlay"></div>
           
           <div class="hero-content">
@@ -139,15 +140,15 @@
       <div class="container">
         <div class="schedule-grid">
           
-          <!-- Card 1 -->
+          <!-- Card 1: Reunión General Domingo 10 AM -->
           <div class="schedule-card">
             <div class="schedule-card-bg">
-              <img src="images/2.jpeg" alt="Culto General">
+              <img src="images/2.jpeg" alt="Reunión General Domingo">
               <div class="schedule-card-bg-overlay"></div>
             </div>
             <div class="schedule-card-inner">
               <span class="schedule-tag tag-presencial">Presencial</span>
-              <h3 class="schedule-title">Culto General</h3>
+              <h3 class="schedule-title">Reunión General</h3>
               <p class="schedule-time">Domingos · 10:00 AM</p>
               <a href="#ubicacion" class="btn btn-outline schedule-btn">
                 <i class="ri-map-pin-2-line"></i> Cómo Llegar
@@ -155,50 +156,66 @@
             </div>
           </div>
 
-          <!-- Card 2 -->
+          <!-- Card 2: Reunión General Viernes 20 PM -->
           <div class="schedule-card">
             <div class="schedule-card-bg">
-              <img src="images/3.jpeg" alt="Discipulados">
+              <img src="images/3.jpeg" alt="Reunión General Viernes">
               <div class="schedule-card-bg-overlay"></div>
             </div>
             <div class="schedule-card-inner">
               <span class="schedule-tag tag-presencial">Presencial</span>
-              <h3 class="schedule-title">Discipulados</h3>
+              <h3 class="schedule-title">Reunión General</h3>
               <p class="schedule-time">Viernes · 20:00 PM</p>
-              <a href="#contacto" class="btn btn-outline schedule-btn">
-                <i class="ri-information-line"></i> Más Información
+              <a href="#ubicacion" class="btn btn-outline schedule-btn">
+                <i class="ri-map-pin-2-line"></i> Cómo Llegar
               </a>
             </div>
           </div>
 
-          <!-- Card 3 -->
+          <!-- Card 3: Escuela de Discipulado Jueves 8 PM -->
           <div class="schedule-card">
             <div class="schedule-card-bg">
-              <img src="images/8.jpeg" alt="Oración">
+              <img src="images/church_community_1786372828891.jpg" alt="Escuela de Discipulado">
               <div class="schedule-card-bg-overlay"></div>
             </div>
             <div class="schedule-card-inner">
-              <span class="schedule-tag tag-online">Vía WhatsApp</span>
-              <h3 class="schedule-title">Oración Online</h3>
-              <p class="schedule-time">Miércoles · 20:30 PM</p>
-              <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
-                <i class="ri-whatsapp-line"></i> Contactar por WhatsApp
+              <span class="schedule-tag tag-online">Vía Online</span>
+              <h3 class="schedule-title">Escuela de Discipulado</h3>
+              <p class="schedule-time">Jueves · 20:00 PM</p>
+              <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
+                <i class="ri-video-chat-line"></i> Unirse vía Zoom
               </a>
             </div>
           </div>
 
-          <!-- Card 4 -->
+          <!-- Card 4: Oración Online Miércoles vía Zoom -->
+          <div class="schedule-card">
+            <div class="schedule-card-bg">
+              <img src="images/8.jpeg" alt="Oración Online">
+              <div class="schedule-card-bg-overlay"></div>
+            </div>
+            <div class="schedule-card-inner">
+              <span class="schedule-tag tag-zoom">Vía Zoom</span>
+              <h3 class="schedule-title">Oración Online</h3>
+              <p class="schedule-time">Miércoles · 20:30 PM</p>
+              <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
+                <i class="ri-video-chat-line"></i> Unirse vía Zoom
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 5: Orden de Batalla Viernes 6 AM -->
           <div class="schedule-card">
             <div class="schedule-card-bg">
               <img src="images/5.jpeg" alt="Orden de Batalla">
               <div class="schedule-card-bg-overlay"></div>
             </div>
             <div class="schedule-card-inner">
-              <span class="schedule-tag tag-online">Oración Online</span>
+              <span class="schedule-tag tag-zoom">Vía Zoom</span>
               <h3 class="schedule-title">Orden de Batalla</h3>
               <p class="schedule-time">Viernes · 06:00 AM</p>
-              <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
-                <i class="ri-whatsapp-line"></i> Contactar por WhatsApp
+              <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline schedule-btn">
+                <i class="ri-video-chat-line"></i> Unirse vía Zoom
               </a>
             </div>
           </div>
@@ -318,7 +335,15 @@
 
           <div class="area-card">
             <div>
-              <div class="area-icon"><i class="ri-sparkles-2-line"></i></div>
+              <div class="area-icon"><i class="ri-hand-heart-line"></i></div>
+              <h3 class="area-title">Intercesión</h3>
+              <p class="area-desc">Equipo comprometido con el clamor y la oración ferviente por nuestra iglesia, las familias y las peticiones congregacionales.</p>
+            </div>
+          </div>
+
+          <div class="area-card">
+            <div>
+              <div class="area-icon"><i class="ri-sparkling-line"></i></div>
               <h3 class="area-title">Servicio de Aseo</h3>
               <p class="area-desc">Servicio con amor que mantiene la casa de Dios impecable, acogedora y digna para recibir a la comunidad.</p>
             </div>
@@ -383,22 +408,41 @@
 
         <div class="reuniones-grid">
           
-          <!-- Miércoles -->
+          <!-- Miércoles - Oración Online Congregacional -->
           <div class="reunion-card">
             <div>
               <span class="reunion-day">Miércoles</span>
-              <h3 class="reunion-name">Oración Congregacional</h3>
+              <h3 class="reunion-name">Oración Online Congregacional</h3>
               <div class="reunion-details">
                 <div class="reunion-detail-item">
                   <i class="ri-time-line"></i> 20:30 PM
                 </div>
                 <div class="reunion-detail-item">
-                  <i class="ri-whatsapp-line"></i> Online · WhatsApp
+                  <i class="ri-video-chat-line"></i> Online · Vía Zoom
                 </div>
               </div>
             </div>
-            <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-primary">
-              <i class="ri-whatsapp-fill"></i> Contactar por WhatsApp
+            <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-primary">
+              <i class="ri-video-chat-fill"></i> Unirse vía Zoom
+            </a>
+          </div>
+
+          <!-- Jueves - Escuela de Discipulado -->
+          <div class="reunion-card">
+            <div>
+              <span class="reunion-day">Jueves</span>
+              <h3 class="reunion-name">Escuela de Discipulado</h3>
+              <div class="reunion-details">
+                <div class="reunion-detail-item">
+                  <i class="ri-time-line"></i> 20:00 PM
+                </div>
+                <div class="reunion-detail-item">
+                  <i class="ri-video-chat-line"></i> Online · Vía Zoom
+                </div>
+              </div>
+            </div>
+            <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline">
+              <i class="ri-video-chat-line"></i> Unirse vía Zoom
             </a>
           </div>
 
@@ -412,35 +456,35 @@
                   <i class="ri-time-line"></i> 06:00 AM
                 </div>
                 <div class="reunion-detail-item">
-                  <i class="ri-global-line"></i> Online · Zoom
+                  <i class="ri-video-chat-line"></i> Online · Vía Zoom
                 </div>
               </div>
             </div>
-            <a href="#" data-link="whatsapp" target="_blank" rel="noopener" class="btn btn-outline">
-              <i class="ri-whatsapp-line"></i> Unirme (WhatsApp)
+            <a href="#" data-link="zoom" target="_blank" rel="noopener" class="btn btn-outline">
+              <i class="ri-video-chat-line"></i> Unirse vía Zoom
             </a>
           </div>
 
-          <!-- Viernes - Discipulado Congregacional -->
+          <!-- Viernes - Reunión General -->
           <div class="reunion-card">
             <div>
               <span class="reunion-day">Viernes</span>
-              <h3 class="reunion-name">Discipulado Congregacional</h3>
+              <h3 class="reunion-name">Reunión General</h3>
               <div class="reunion-details">
                 <div class="reunion-detail-item">
                   <i class="ri-time-line"></i> 20:00 PM
                 </div>
                 <div class="reunion-detail-item">
-                  <i class="ri-building-line"></i> Presencial · Las Heras 460
+                  <i class="ri-map-pin-line"></i> Presencial · Las Heras 460
                 </div>
               </div>
             </div>
-            <a href="#contacto" class="btn btn-outline">
-              <i class="ri-information-line"></i> Más información
+            <a href="#ubicacion" class="btn btn-outline">
+              <i class="ri-navigation-line"></i> Cómo llegar
             </a>
           </div>
 
-          <!-- Sábado -->
+          <!-- Sábado - Jóvenes de Paz -->
           <div class="reunion-card">
             <div>
               <span class="reunion-day">Sábado</span>
@@ -485,15 +529,15 @@
               <h3 class="reunion-name">Cuna Profética</h3>
               <div class="reunion-details">
                 <div class="reunion-detail-item">
-                  <i class="ri-time-line"></i> 11:00 AM
+                  <i class="ri-time-line"></i> 10:00 AM
                 </div>
                 <div class="reunion-detail-item">
                   <i class="ri-parent-line"></i> Presencial · Sala Infantil
                 </div>
               </div>
             </div>
-            <a href="cuna-profetica.html" class="btn btn-outline">
-              <i class="ri-arrow-right-line"></i> Conocer Cuna
+            <a href="#cuna-profetica" class="btn btn-outline">
+              <i class="ri-heart-3-line"></i> Conocer Cuna
             </a>
           </div>
 
@@ -584,7 +628,7 @@
           <div class="sermon-thumbnail-wrapper">
             <div class="youtube-embed-wrapper">
               <iframe 
-                src="https://www.youtube.com/embed/ZE7zNQ5f6QE?start=356&rel=0&modestbranding=1" 
+                src="https://www.youtube.com/embed/7lUWHMbaw_A?rel=0&modestbranding=1" 
                 title="Última Predicación - Iglesia Familias de Paz"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -596,16 +640,16 @@
 
           <div class="sermon-info">
             <span class="sermon-tag">Última Predicación</span>
-            <h3 class="sermon-title">Viviendo en la Paz y el Propósito de Dios</h3>
+            <h3 class="sermon-title">Cuando el Fuego Pruebe tu Obra</h3>
             <div class="sermon-meta">
               <span><i class="ri-user-3-line"></i> Pastor Christopher Rodríguez</span>
               <span><i class="ri-youtube-fill"></i> YouTube</span>
             </div>
             <p style="margin-bottom: 28px;">
-              Descubre cómo la presencia de Dios transforma cada ámbito de nuestras familias y nos capacita para caminar con fe en medio de cualquier circunstancia.
+              Enseñanza poderosa sobre la fidelidad, el carácter y cómo la presencia de Dios prueba y afirma nuestra obra para dar fruto eterno.
             </p>
             <div style="display: flex; gap: 14px; flex-wrap: wrap;">
-              <a href="https://www.youtube.com/watch?v=ZE7zNQ5f6QE&t=356s" target="_blank" rel="noopener" class="btn btn-primary">
+              <a href="https://www.youtube.com/watch?v=7lUWHMbaw_A" target="_blank" rel="noopener" class="btn btn-primary">
                 <i class="ri-youtube-fill"></i> Ver en YouTube
               </a>
               <a href="https://www.youtube.com/@iglesiafamiliasdepaz" target="_blank" rel="noopener" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);">
@@ -805,7 +849,7 @@
             <li><a href="#nuestra-iglesia">Nuestra Iglesia</a></li>
             <li><a href="#reuniones">Reuniones</a></li>
             <li><a href="#ministerios">Ministerios</a></li>
-            <li><a href="cuna-profetica.html">Cuna Profética</a></li>
+            <li><a href="#cuna-profetica">Cuna Profética</a></li>
             <li><a href="#contacto">Contacto</a></li>
           </ul>
         </div>
@@ -815,15 +859,19 @@
           <div class="footer-hours-list">
             <div class="footer-hour-item">
               <strong>Miércoles · 20:30 PM</strong>
-              <span>Oración Congregacional (Online)</span>
+              <span>Oración Online Congregacional (Zoom)</span>
+            </div>
+            <div class="footer-hour-item">
+              <strong>Jueves · 20:00 PM</strong>
+              <span>Escuela de Discipulado (Online)</span>
             </div>
             <div class="footer-hour-item">
               <strong>Viernes · 06:00 AM</strong>
-              <span>Orden de Batalla (Online)</span>
+              <span>Orden de Batalla (Zoom)</span>
             </div>
             <div class="footer-hour-item">
               <strong>Viernes · 20:00 PM</strong>
-              <span>Discipulado Congregacional</span>
+              <span>Reunión General (Presencial)</span>
             </div>
             <div class="footer-hour-item">
               <strong>Sábado · 18:00 PM</strong>
@@ -831,11 +879,7 @@
             </div>
             <div class="footer-hour-item">
               <strong>Domingo · 10:00 AM</strong>
-              <span>Reunión General (Presencial)</span>
-            </div>
-            <div class="footer-hour-item">
-              <strong>Domingo · 11:00 AM</strong>
-              <span>Cuna Profética (Presencial)</span>
+              <span>Reunión General & Cuna Profética</span>
             </div>
           </div>
         </div>
