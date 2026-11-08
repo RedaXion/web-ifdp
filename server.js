@@ -198,6 +198,36 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
   }
 });
 
+// Función auxiliar para calcular el promedio de un estudiante
+// Donde no se haya subido nota para una evaluación de su nivel, por defecto cuenta como 1.0
+function calculateStudentAvg(student, evaluations, grades) {
+  if (!student || student.role !== 'student') return 'N/A';
+  const studentEvals = (evaluations || []).filter(e => e.nivel === student.nivel);
+  const uGrades = (grades || []).filter(g => g.studentId === student.id);
+
+  if (studentEvals.length > 0) {
+    let sum = 0;
+    studentEvals.forEach(e => {
+      const gr = uGrades.find(g => (g.evaluationId && g.evaluationId === e.id) || g.unidad === e.titulo);
+      if (gr && gr.nota !== undefined && gr.nota !== null && !isNaN(gr.nota)) {
+        sum += parseFloat(gr.nota);
+      } else {
+        sum += 1.0; // donde no subió nota, por defecto tiene que ir un 1
+      }
+    });
+    return (sum / studentEvals.length).toFixed(1);
+  }
+
+  if (uGrades.length > 0) {
+    const valid = uGrades.filter(g => !isNaN(g.nota));
+    if (valid.length > 0) {
+      return (valid.reduce((acc, g) => acc + parseFloat(g.nota), 0) / valid.length).toFixed(1);
+    }
+  }
+
+  return 'N/A';
+}
+
 // --------------------------------------------------------------------------
 // RUTAS API - PAIDAGOGOS (/discipulado/paidagogos)
 // --------------------------------------------------------------------------
@@ -223,12 +253,18 @@ app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req,
       FROM grades
     `);
     const attRes = await pool.query('SELECT class_id as "classId", student_id as "studentId", status FROM attendance');
+    const evalRes = await pool.query('SELECT id, titulo, nivel FROM evaluations');
+    const evaluations = evalRes.rows;
 
-    const studentsWithGrades = studentsRes.rows.map(s => ({
-      ...s,
-      grades: gradesRes.rows.filter(g => g.studentId === s.id).map(g => ({...g, nota: parseFloat(g.nota)})),
-      attendance: attRes.rows.filter(a => a.studentId === s.id)
-    }));
+    const studentsWithGrades = studentsRes.rows.map(s => {
+      const sGrades = gradesRes.rows.filter(g => g.studentId === s.id).map(g => ({...g, nota: parseFloat(g.nota)}));
+      return {
+        ...s,
+        avgGrade: calculateStudentAvg(s, evaluations, sGrades),
+        grades: sGrades,
+        attendance: attRes.rows.filter(a => a.studentId === s.id)
+      };
+    });
 
     res.json(studentsWithGrades);
   } catch(err) {
@@ -392,9 +428,7 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
     const prayerRequests = prayerRes.rows;
 
     const usersWithStats = usersRes.rows.map(u => {
-      let uGrades = grades.filter(g => g.studentId === u.id);
-      let avgGrade = uGrades.length > 0 ? (uGrades.reduce((acc, g) => acc + g.nota, 0) / uGrades.length).toFixed(1) : 'N/A';
-      
+      let avgGrade = calculateStudentAvg(u, evaluations, grades);
       let uAtt = attendance.filter(a => a.studentId === u.id);
       let avgAtt = uAtt.length > 0 ? (uAtt.filter(a => a.status === 'presente').length / uAtt.length * 100).toFixed(0) + '%' : 'N/A';
 
@@ -429,13 +463,15 @@ app.get('/api/admin/export', authRole(['admin']), async (req, res) => {
     const usersRes = await pool.query(usersQuery, usersParams);
     const users = usersRes.rows;
 
-    const gradesRes = await pool.query('SELECT student_id as "studentId", nota FROM grades');
+    const gradesRes = await pool.query('SELECT student_id as "studentId", evaluation_id as "evaluationId", unidad, nota FROM grades');
     const attRes = await pool.query('SELECT student_id as "studentId", status FROM attendance');
+    const evalsRes = await pool.query('SELECT id, titulo, nivel FROM evaluations');
+    const evaluations = evalsRes.rows;
 
     let csv = 'ID,Nombre,Username,Email,Rol,Nivel,Promedio General,Asistencia (%)\n';
     users.forEach(u => {
       const uGrades = gradesRes.rows.filter(g => g.studentId === u.id);
-      const avgGrade = uGrades.length ? (uGrades.reduce((a,b)=>a+parseFloat(b.nota),0)/uGrades.length).toFixed(1) : 'N/A';
+      const avgGrade = calculateStudentAvg(u, evaluations, uGrades);
       
       const uAtt = attRes.rows.filter(a => a.studentId === u.id);
       const totalAtt = uAtt.length;

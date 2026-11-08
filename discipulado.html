@@ -188,9 +188,16 @@
       const totalAtt = data.attendance ? data.attendance.length : 0;
       const presentAtt = data.attendance ? data.attendance.filter(a => a.status === 'presente').length : 0;
       const attPercent = totalAtt > 0 ? Math.round((presentAtt / totalAtt) * 100) + '%' : 'N/A';
-      const avgGrade = data.grades && data.grades.length > 0
-        ? (data.grades.reduce((acc, g) => acc + g.nota, 0) / data.grades.length).toFixed(1)
-        : 'N/A';
+      let avgGrade = 'N/A';
+      if (data.evaluations && data.evaluations.length > 0) {
+        const sum = data.evaluations.reduce((acc, e) => {
+          const g = data.grades ? data.grades.find(gr => (gr.evaluationId && gr.evaluationId === e.id) || gr.unidad === e.titulo) : null;
+          return acc + (g && !isNaN(g.nota) ? parseFloat(g.nota) : 1.0);
+        }, 0);
+        avgGrade = (sum / data.evaluations.length).toFixed(1);
+      } else if (data.grades && data.grades.length > 0) {
+        avgGrade = (data.grades.reduce((acc, g) => acc + g.nota, 0) / data.grades.length).toFixed(1);
+      }
       document.getElementById('statAvgGrade').textContent = avgGrade;
       document.getElementById('statAttendance').textContent = attPercent;
 
@@ -217,8 +224,27 @@
 
       // Render Notas y Asistencia (detalle individual, el resumen ya está arriba)
       const gradesDiv = document.getElementById('gradesContainer');
+      const allLevelEvals = data.evaluations || [];
 
-      if (!data.grades || data.grades.length === 0) {
+      if (allLevelEvals.length > 0) {
+        gradesDiv.innerHTML = allLevelEvals.map(e => {
+          const g = data.grades ? data.grades.find(gr => (gr.evaluationId && gr.evaluationId === e.id) || gr.unidad === e.titulo) : null;
+          const notaFinal = g && !isNaN(g.nota) ? g.nota : 1.0;
+          const pct = g && g.porcentaje ? g.porcentaje : Math.round((notaFinal / 7.0) * 100);
+          const obs = g && g.observaciones ? g.observaciones : (!g ? 'Sin nota registrada (calificación por defecto: 1.0)' : '');
+          return `
+            <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed var(--border-light);">
+              <div style="display:flex; justify-content:space-between; font-weight:700;">
+                <span>${e.titulo}</span>
+                <span style="color:${notaFinal >= 4.0 ? 'var(--accent-orange)' : '#DC2626'}; font-size:1.1rem;">
+                  ${notaFinal} <span style="font-size:0.8rem; color:var(--text-secondary);">(${pct}%)</span>
+                </span>
+              </div>
+              ${obs ? `<div style="font-size:0.85rem; font-style:italic; margin-top:4px; color:${!g ? 'var(--text-muted)' : 'inherit'};">"${obs}"</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      } else if (!data.grades || data.grades.length === 0) {
         gradesDiv.innerHTML = `<p style="color:var(--text-secondary);">Aún no hay calificaciones registradas.</p>`;
       } else {
         gradesDiv.innerHTML = data.grades.map(g => `

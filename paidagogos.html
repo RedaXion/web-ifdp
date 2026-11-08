@@ -296,17 +296,20 @@
       const tbody = document.getElementById('studentsTableBody');
 
 
-      tbody.innerHTML = currentStudents.map(s => `
+      tbody.innerHTML = currentStudents.map(s => {
+        return `
         <tr>
           <td>
             <strong>${s.nombre}</strong><br>
             <span style="font-size:0.8rem; color:var(--text-muted);">${s.nivel || 'Nivel 1: Corderitos'}</span>
+            ${s.avgGrade ? `<div style="font-size:0.78rem; margin-top:3px; color:var(--text-secondary);"><strong>Promedio General:</strong> <span style="color:var(--accent-orange); font-weight:700;">${s.avgGrade}</span> <small style="color:var(--text-muted);">(sin nota cuenta como 1.0)</small></div>` : ''}
           </td>
           <td>
-            ${s.grades.length ? s.grades.map(g => `<span style="display:inline-block; background:#E0F2FE; color:#0284C7; padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; margin:2px;" title="${g.puntajeObtenido}/${g.puntajeTotal}">${g.unidad}: ${g.nota} (${g.porcentaje}%)</span>`).join(' ') : '<em style="color:var(--text-muted); font-size:0.85rem;">Sin notas</em>'}
+            ${s.grades.length ? s.grades.map(g => `<span style="display:inline-block; background:#E0F2FE; color:#0284C7; padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; margin:2px;" title="${g.puntajeObtenido}/${g.puntajeTotal}">${g.unidad}: ${g.nota} (${g.porcentaje}%)</span>`).join(' ') : '<em style="color:var(--text-muted); font-size:0.85rem;">Sin notas registradas</em>'}
           </td>
         </tr>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function openClassModal(classId) {
@@ -388,7 +391,9 @@
                   <td style="padding:10px 6px;">
                     <strong style="color:var(--text-primary); font-size:0.95rem;">${s.nombre}</strong><br>
                     <span style="font-size:0.75rem; color:var(--text-muted);">${s.nivel || ''}</span>
-                    ${existingGrade ? `<span style="display:inline-block; margin-left:8px; font-size:0.75rem; color:var(--accent-orange); font-weight:700; background:#FFF7ED; padding:1px 6px; border-radius:4px;">Nota actual: ${existingGrade.nota}</span>` : ''}
+                    ${existingGrade 
+                      ? `<span style="display:inline-block; margin-left:8px; font-size:0.75rem; color:var(--accent-orange); font-weight:700; background:#FFF7ED; padding:1px 6px; border-radius:4px;">Nota actual: ${existingGrade.nota}</span>` 
+                      : `<span style="display:inline-block; margin-left:8px; font-size:0.75rem; color:#DC2626; font-weight:700; background:#FEE2E2; padding:1px 6px; border-radius:4px;">Sin nota (promedia como 1.0)</span>`}
                   </td>
                   <td style="padding:10px 6px; text-align:right;">
                     <input type="text" 
@@ -396,7 +401,7 @@
                            class="grade-input" 
                            data-studentid="${s.id}" 
                            value="${prefillValue}" 
-                           placeholder="Ej: 6.2" 
+                           placeholder="1.0" 
                            style="width:90px; padding:6px 10px; border:1px solid var(--border-light); border-radius:6px; font-size:0.95rem; font-weight:700; text-align:center; color:#0F172A;"
                            oninput="this.value = this.value.replace(',', '.');">
                   </td>

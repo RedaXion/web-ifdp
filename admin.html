@@ -658,7 +658,16 @@
           const evalGrades = (data.grades || []).filter(g => (g.evaluationId && g.evaluationId === e.id) || g.unidad === e.titulo);
           const gradedCount = evalGrades.length;
           const totalLevel = evalStudents.length;
-          const avg = gradedCount > 0 ? (evalGrades.reduce((a, b) => a + parseFloat(b.nota), 0) / gradedCount).toFixed(1) : 'Sin notas';
+          let avg = 'Sin notas';
+          if (totalLevel > 0) {
+            const sumAll = evalStudents.reduce((sum, st) => {
+              const g = evalGrades.find(gr => gr.studentId === st.id);
+              return sum + (g && !isNaN(g.nota) ? parseFloat(g.nota) : 1.0);
+            }, 0);
+            avg = (sumAll / totalLevel).toFixed(1);
+          } else if (gradedCount > 0) {
+            avg = (evalGrades.reduce((a, b) => a + parseFloat(b.nota), 0) / gradedCount).toFixed(1);
+          }
 
           return `
           <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-left:4px solid var(--accent-orange); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; transition:all 0.2s;" onmouseover="this.style.background='#FFEDD5'" onmouseout="this.style.background='#FFF7ED'">
@@ -668,7 +677,7 @@
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin: 8px 0 10px 0; font-size:0.85rem; color:var(--text-secondary); cursor:pointer;" onclick="openAdminEvalDetail('${e.id}')">
               <span><i class="ri-user-follow-line text-orange"></i> Calificados: <strong>${gradedCount}/${totalLevel}</strong> alumnos</span>
-              <span><i class="ri-bar-chart-line text-orange"></i> Promedio: <strong style="color:var(--accent-orange);">${avg}</strong></span>
+              <span><i class="ri-bar-chart-line text-orange"></i> Promedio de prueba: <strong style="color:var(--accent-orange);">${avg}</strong></span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px dashed #FED7AA;">
               <button onclick="openAdminEvalDetail('${e.id}')" class="btn" style="background:var(--accent-orange); color:white; padding:4px 12px; font-size:0.8rem; border-radius:4px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
@@ -757,14 +766,24 @@
       let htmlGrades = '<table style="width:100%; text-align:left; border-collapse:collapse; margin-bottom:10px;"><thead><tr style="border-bottom:2px solid var(--border-light);"><th style="padding:8px;">Evaluación</th><th style="padding:8px;">Nota</th><th style="padding:8px;">Acción</th></tr></thead><tbody>';
       const evalsForLevel = adminData.evaluations.filter(e => e.nivel === u.nivel);
       evalsForLevel.forEach(e => {
-        const grade = userGrades.find(g => g.unidad === e.titulo);
+        const grade = userGrades.find(g => (g.evaluationId && g.evaluationId === e.id) || g.unidad === e.titulo);
         htmlGrades += `<tr style="border-bottom:1px solid var(--border-light);">
-          <td style="padding:8px;">${e.titulo}</td>
-          <td style="padding:8px;">${grade ? `<span style="color:var(--accent-orange); font-weight:700;">${grade.nota}</span> <span style="font-size:0.8rem; color:var(--text-secondary);">(${grade.porcentaje}%)</span>` : '<span style="color:var(--text-muted);">Sin nota</span>'}</td>
-          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.nota : 0}, 7.0, '${grade ? grade.observaciones : ''}', '${u.id}')">Editar</button></td>
+          <td style="padding:8px;"><strong>${e.titulo}</strong></td>
+          <td style="padding:8px;">
+            ${grade 
+              ? `<span style="color:var(--accent-orange); font-weight:700;">${grade.nota}</span> <span style="font-size:0.8rem; color:var(--text-secondary);">(${grade.porcentaje}%)</span>` 
+              : '<span style="color:#DC2626; font-weight:700;">1.0</span> <span style="font-size:0.75rem; color:var(--text-muted);">(Por defecto)</span>'}
+          </td>
+          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.nota : 1.0}, 7.0, '${grade ? grade.observaciones : ''}', '${u.id}')">Editar</button></td>
         </tr>`;
       });
       htmlGrades += '</tbody></table>';
+      htmlGrades += `
+        <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-radius:var(--radius-sm); padding:10px 14px; margin-top:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.85rem; color:var(--text-secondary);"><strong>Promedio General:</strong> (evaluaciones sin nota promedian como 1.0)</span>
+          <strong style="color:var(--accent-orange); font-size:1.15rem;">${u.avgGrade || 'N/A'}</strong>
+        </div>
+      `;
       document.getElementById('adminUserGradesTable').innerHTML = htmlGrades;
       
       document.getElementById('adminUserDetailModal').style.display = 'flex';
@@ -897,15 +916,17 @@
       targetStudents.forEach(st => {
         const grade = adminData.grades.find(g => g.studentId === st.id && ((g.evaluationId && g.evaluationId === e.id) || g.unidad === e.titulo));
         const val = grade ? grade.nota : '';
+        const effectiveNota = (grade && !isNaN(grade.nota)) ? parseFloat(grade.nota) : 1.0;
         if (grade && !isNaN(grade.nota)) {
           totalGraded++;
-          sumGrades += parseFloat(grade.nota);
         }
+        sumGrades += effectiveNota;
 
         html += `
           <tr style="border-bottom:1px solid var(--border-light);">
             <td style="padding:10px 8px;">
-              <strong>${st.nombre}</strong><br>
+              <strong>${st.nombre}</strong>
+              ${!grade ? `<span style="font-size:0.75rem; color:#DC2626; font-weight:600; background:#FEE2E2; padding:1px 6px; border-radius:4px; margin-left:6px;">Sin nota (promedia como 1.0)</span>` : ''}<br>
               <span style="font-size:0.75rem; color:var(--text-muted);">@${st.username}</span>
             </td>
             <td style="padding:10px 8px;">
@@ -917,7 +938,7 @@
                      class="admin-eval-grade-input" 
                      data-studentid="${st.id}" 
                      value="${val}" 
-                     placeholder="Ej: 6.2"
+                     placeholder="1.0"
                      style="width:85px; padding:6px 8px; border:1px solid var(--border-light); border-radius:6px; font-size:0.95rem; font-weight:700; text-align:center; color:#0F172A;"
                      oninput="this.value = this.value.replace(',', '.');">
             </td>
@@ -928,9 +949,9 @@
       html += '</tbody></table>';
       listDiv.innerHTML = html;
 
-      const avgText = totalGraded > 0 ? (sumGrades / totalGraded).toFixed(1) : 'Sin notas';
+      const avgText = targetStudents.length > 0 ? (sumGrades / targetStudents.length).toFixed(1) : 'Sin notas';
       document.getElementById('adminEvalSummary').innerHTML = `
-        <strong>${totalGraded} de ${targetStudents.length}</strong> alumnos calificados | Promedio: <strong style="color:var(--accent-orange);">${avgText}</strong>
+        <strong>${totalGraded} de ${targetStudents.length}</strong> alumnos calificados (sin nota = 1.0) | Promedio de la prueba: <strong style="color:var(--accent-orange); font-size:1rem;">${avgText}</strong>
       `;
     }
 
