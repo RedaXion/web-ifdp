@@ -23,13 +23,15 @@ async function initDB() {
     try {
       await pool.query('ALTER TABLE classes ADD COLUMN IF NOT EXISTS anexos_youtube TEXT');
       await pool.query('ALTER TABLE classes ADD COLUMN IF NOT EXISTS visible BOOLEAN DEFAULT TRUE');
+      await pool.query('ALTER TABLE grades ADD COLUMN IF NOT EXISTS evaluation_id VARCHAR(50) REFERENCES evaluations(id) ON DELETE CASCADE');
+      await pool.query('UPDATE grades SET evaluation_id = evaluations.id FROM evaluations WHERE grades.evaluation_id IS NULL AND grades.unidad = evaluations.titulo');
       await pool.query(`CREATE TABLE IF NOT EXISTS page_visits (
         id SERIAL PRIMARY KEY,
         visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         session_id VARCHAR(100)
       )`);
     } catch(e) {
-      // ignore
+      console.warn('DB Migration notice:', e.message);
     }
     console.log('✅ Base de datos PostgreSQL inicializada correctamente.');
   } catch (err) {

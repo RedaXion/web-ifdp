@@ -161,13 +161,42 @@
 
     <!-- MODAL DETALLE EVALUACION ADMIN -->
     <div id="adminEvalDetailModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
-      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:600px; max-height:85vh; overflow-y:auto;">
-        <h3 id="adminEvalDetailTitle" style="margin-bottom: 20px;">Detalle de Evaluación</h3>
-        <p id="adminEvalDetailDesc" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;"></p>
-        <div id="adminEvalDetailTable" style="margin-bottom:20px;"></div>
-        <div style="display:flex; justify-content:flex-end;">
-          <button type="button" onclick="closeAdminEvalDetailModal()" class="btn btn-outline">Cerrar</button>
+      <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:700px; max-height:88vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+          <div>
+            <h3 id="adminEvalDetailTitle" style="margin:0 0 6px 0;">Detalle de Evaluación</h3>
+            <p id="adminEvalDetailDesc" style="font-size:0.85rem; color:var(--text-secondary); margin:0;"></p>
+          </div>
+          <button type="button" onclick="closeAdminEvalDetailModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--text-muted);">&times;</button>
         </div>
+
+        <!-- Filtro por Nivel dentro del Modal de Evaluación -->
+        <div style="background:#F8FAFC; border:1px solid var(--border-light); padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ri-filter-3-line text-orange"></i>
+            <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary);">Filtrar estudiantes:</span>
+          </div>
+          <select id="adminModalNivelFilter" onchange="renderAdminEvalStudentsTable()" style="padding:6px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-light); font-size:0.85rem; font-weight:600;">
+            <option value="evalLevel">Solo Nivel de esta Evaluación</option>
+            <option value="all">Todos los Niveles</option>
+            <option value="Nivel 1: Corderitos">Nivel 1: Corderitos</option>
+            <option value="Nivel 2: Tekníon">Nivel 2: Tekníon</option>
+            <option value="Nivel 3: Neaniskos">Nivel 3: Neaniskos</option>
+          </select>
+        </div>
+
+        <form id="adminEvalBatchForm" onsubmit="event.preventDefault(); saveAdminBatchGrades();">
+          <input type="hidden" id="adminEvalCurrentId">
+          <div id="adminEvalDetailTable" style="margin-bottom:20px; max-height:420px; overflow-y:auto; border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:10px; background:#FAFAFA;"></div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; border-top:1px solid var(--border-light); padding-top:16px; flex-wrap:wrap;">
+            <div id="adminEvalSummary" style="font-size:0.85rem; color:var(--text-secondary);"></div>
+            <div style="display:flex; gap:10px;">
+              <button type="button" onclick="closeAdminEvalDetailModal()" class="btn btn-outline">Cerrar</button>
+              <button type="submit" class="btn btn-primary" style="background:var(--accent-orange);"><i class="ri-save-line"></i> Guardar Notas de Todos</button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -227,19 +256,16 @@
           <input type="hidden" id="editGradeId">
           <input type="hidden" id="editGradeStudentId">
           <div class="form-group">
-            <label>Unidad / Módulo</label>
+            <label>Unidad / Módulo / Evaluación</label>
             <input type="text" id="editGradeUnidad" required>
           </div>
           <div class="form-group">
-            <label>Puntaje Obtenido</label>
-            <input type="number" step="0.5" id="editGradeObtenido" required>
+            <label>Nota (Escala 1.0 a 7.0)</label>
+            <input type="text" inputmode="decimal" id="editGradeNota" placeholder="Ej: 6.2" required oninput="this.value = this.value.replace(',', '.');">
+            <small style="color:var(--text-secondary);">Ingresa la nota entre 1.0 y 7.0 (utiliza punto para decimales)</small>
           </div>
           <div class="form-group">
-            <label>Puntaje Total</label>
-            <input type="number" step="0.5" id="editGradeTotal" required>
-          </div>
-          <div class="form-group">
-            <label>Observaciones</label>
+            <label>Observaciones (Opcional)</label>
             <textarea id="editGradeObservaciones" rows="2"></textarea>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
@@ -375,11 +401,12 @@
     <!-- MODAL CREAR EVALUACION -->
     <div id="evalModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
       <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:540px;">
-        <h3 style="margin-bottom: 20px;">Crear Nueva Evaluación</h3>
+        <h3 style="margin-bottom: 20px;">Crear Sección de Prueba / Evaluación</h3>
         <form id="evalForm">
+          <input type="hidden" id="evalPuntajeTotal" value="7.0">
           <div class="form-group">
-            <label>Título de la Evaluación</label>
-            <input type="text" id="evalTitulo" placeholder="Ej: Evaluación 1" required>
+            <label>Título de la Sección de Prueba / Evaluación</label>
+            <input type="text" id="evalTitulo" placeholder="Ej: Prueba 1: Fundamentos de la Fe" required>
           </div>
           <div class="form-group">
             <label>Nivel de Discipulado</label>
@@ -389,13 +416,13 @@
               <option value="Nivel 3: Neaniskos">Nivel 3: Neaniskos</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Puntaje Total</label>
-            <input type="number" step="0.5" id="evalPuntajeTotal" placeholder="Ej: 30" required>
+          <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-radius:var(--radius-sm); padding:12px; margin-top:10px; margin-bottom:20px; font-size:0.85rem; color:#C2410C;">
+            <i class="ri-information-line" style="font-weight:700;"></i> 
+            <strong>Escala estándar 1.0 a 7.0:</strong> Una vez creada, los paidagogos correspondientes y la administración podrán ingresar directamente la nota (ej: 6.2) para todos sus alumnos.
           </div>
-          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <div style="display:flex; justify-content:flex-end; gap:12px;">
             <button type="button" onclick="closeEvalModal()" class="btn btn-outline">Cancelar</button>
-            <button type="submit" class="btn btn-primary" style="background:#ea580c;">Crear Evaluación</button>
+            <button type="submit" class="btn btn-primary" style="background:#ea580c;">Crear Sección de Prueba</button>
           </div>
         </form>
       </div>
@@ -626,18 +653,31 @@
           if (!filterNivelText) return true;
           return e.nivel === filterNivelText;
         });
-        document.getElementById('adminEvaluationsList').innerHTML = filteredEvals.map(e => `
+        document.getElementById('adminEvaluationsList').innerHTML = filteredEvals.map(e => {
+          const evalStudents = (data.users || []).filter(u => u.nivel === e.nivel && u.role === 'student');
+          const evalGrades = (data.grades || []).filter(g => (g.evaluationId && g.evaluationId === e.id) || g.unidad === e.titulo);
+          const gradedCount = evalGrades.length;
+          const totalLevel = evalStudents.length;
+          const avg = gradedCount > 0 ? (evalGrades.reduce((a, b) => a + parseFloat(b.nota), 0) / gradedCount).toFixed(1) : 'Sin notas';
+
+          return `
           <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-left:4px solid var(--accent-orange); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; transition:all 0.2s;" onmouseover="this.style.background='#FFEDD5'" onmouseout="this.style.background='#FFF7ED'">
             <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="openAdminEvalDetail('${e.id}')">
               <h4 style="margin:0;">${e.titulo}</h4>
               <span style="font-size:0.75rem; background:rgba(234,88,12,0.1); color:var(--accent-orange); font-weight:700; padding:2px 8px; border-radius:4px;">${e.nivel}</span>
             </div>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin: 4px 0 8px 0; cursor:pointer;" onclick="openAdminEvalDetail('${e.id}')">Puntaje Total: ${e.puntajeTotal}</p>
-            <div style="display:flex; justify-content:flex-end;">
-              <button onclick="deleteEval('${e.id}')" style="background:none; border:none; color:#DC2626; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-delete-bin-line"></i> Eliminar evaluación</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin: 8px 0 10px 0; font-size:0.85rem; color:var(--text-secondary); cursor:pointer;" onclick="openAdminEvalDetail('${e.id}')">
+              <span><i class="ri-user-follow-line text-orange"></i> Calificados: <strong>${gradedCount}/${totalLevel}</strong> alumnos</span>
+              <span><i class="ri-bar-chart-line text-orange"></i> Promedio: <strong style="color:var(--accent-orange);">${avg}</strong></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px dashed #FED7AA;">
+              <button onclick="openAdminEvalDetail('${e.id}')" class="btn" style="background:var(--accent-orange); color:white; padding:4px 12px; font-size:0.8rem; border-radius:4px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <i class="ri-edit-line"></i> Calificar Alumnos (1.0 - 7.0)
+              </button>
+              <button onclick="deleteEval('${e.id}')" style="background:none; border:none; color:#DC2626; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px;"><i class="ri-delete-bin-line"></i> Eliminar</button>
             </div>
           </div>
-        `).join('');
+        `;}).join('');
       }
 
       // Render Attendance
@@ -721,7 +761,7 @@
         htmlGrades += `<tr style="border-bottom:1px solid var(--border-light);">
           <td style="padding:8px;">${e.titulo}</td>
           <td style="padding:8px;">${grade ? `<span style="color:var(--accent-orange); font-weight:700;">${grade.nota}</span> <span style="font-size:0.8rem; color:var(--text-secondary);">(${grade.porcentaje}%)</span>` : '<span style="color:var(--text-muted);">Sin nota</span>'}</td>
-          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.puntajeObtenido : 0}, ${e.puntajeTotal}, '${grade ? grade.observaciones : ''}', '${u.id}')">Editar</button></td>
+          <td style="padding:8px;"><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.nota : 0}, 7.0, '${grade ? grade.observaciones : ''}', '${u.id}')">Editar</button></td>
         </tr>`;
       });
       htmlGrades += '</tbody></table>';
@@ -794,36 +834,172 @@
 
     function closeAdminAttDetailModal() { document.getElementById('adminAttDetailModal').style.display = 'none'; }
 
+    let currentAdminEvalId = null;
+
     function openAdminEvalDetail(id) {
+      currentAdminEvalId = id;
       const e = adminData.evaluations.find(x => x.id === id);
       if(!e) return;
+      document.getElementById('adminEvalCurrentId').value = id;
       document.getElementById('adminEvalDetailTitle').textContent = 'Evaluación: ' + e.titulo;
-      document.getElementById('adminEvalDetailDesc').textContent = 'Puntaje Total: ' + e.puntajeTotal + ' | Nivel: ' + e.nivel;
+      document.getElementById('adminEvalDetailDesc').textContent = `Nivel asignado: ${e.nivel} | Escala de notas 1.0 a 7.0 (usa puntos, ej: 6.2)`;
       
-      const students = adminData.users.filter(u => u.nivel === e.nivel && u.role === 'student');
-      let html = '<table style="width:100%; text-align:left; border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--border-light);"><th style="padding:8px;">Estudiante</th><th style="padding:8px;">Nota</th><th style="padding:8px;">Acción</th></tr></thead><tbody>';
-      
-      students.forEach(st => {
-        const grade = adminData.grades.find(g => g.studentId === st.id && g.unidad === e.titulo);
-        html += `<tr style="border-bottom:1px solid var(--border-light);">
-          <td style="padding:8px;"><strong>${st.nombre}</strong></td>
-          <td style="padding:8px;">
-            ${grade ? `<span style="color:var(--accent-orange); font-weight:700;">${grade.nota}</span> <span style="font-size:0.8rem; color:var(--text-secondary);">(${grade.porcentaje}%)</span>` : '<span style="color:var(--text-muted);">Sin nota</span>'}
-          </td>
-          <td style="padding:8px;">
-            <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="openEditGradeModal('${grade ? grade.id : ''}', '${e.titulo}', ${grade ? grade.puntajeObtenido : 0}, ${e.puntajeTotal}, '${grade ? grade.observaciones : ''}')">
-              ${grade ? 'Editar' : 'Ingresar'}
-            </button>
-          </td>
-        </tr>`;
-      });
-      html += '</tbody></table>';
-      document.getElementById('adminEvalDetailTable').innerHTML = html;
+      // Ajustar filtro del modal si el admin ya tiene un nivel seleccionado en el dashboard
+      const globalFilter = document.getElementById('adminLevelFilter') ? document.getElementById('adminLevelFilter').value : '';
+      const modalFilter = document.getElementById('adminModalNivelFilter');
+      if (globalFilter === '1') modalFilter.value = 'Nivel 1: Corderitos';
+      else if (globalFilter === '2') modalFilter.value = 'Nivel 2: Tekníon';
+      else if (globalFilter === '3') modalFilter.value = 'Nivel 3: Neaniskos';
+      else modalFilter.value = 'evalLevel';
+
+      renderAdminEvalStudentsTable();
       document.getElementById('adminEvalDetailModal').style.display = 'flex';
+    }
+
+    function renderAdminEvalStudentsTable() {
+      if(!currentAdminEvalId) return;
+      const e = adminData.evaluations.find(x => x.id === currentAdminEvalId);
+      if(!e) return;
+
+      const filterMode = document.getElementById('adminModalNivelFilter').value;
+      let targetStudents = (adminData.users || []).filter(u => u.role === 'student');
+
+      if (filterMode === 'evalLevel') {
+        targetStudents = targetStudents.filter(u => u.nivel === e.nivel);
+      } else if (filterMode === 'all') {
+        // todos los niveles
+      } else if (filterMode) {
+        targetStudents = targetStudents.filter(u => u.nivel === filterMode);
+      }
+
+      const listDiv = document.getElementById('adminEvalDetailTable');
+      if (targetStudents.length === 0) {
+        listDiv.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding:15px; margin:0;">No se encontraron estudiantes registrados para el filtro seleccionado.</p>';
+        document.getElementById('adminEvalSummary').innerHTML = '';
+        return;
+      }
+
+      let totalGraded = 0;
+      let sumGrades = 0;
+
+      let html = `
+        <table style="width:100%; text-align:left; border-collapse:collapse; font-size:0.9rem;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border-light); background:#F1F5F9;">
+              <th style="padding:10px 8px;">Estudiante</th>
+              <th style="padding:10px 8px;">Nivel</th>
+              <th style="padding:10px 8px; width:130px; text-align:right;">Nota (1.0 - 7.0)</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      targetStudents.forEach(st => {
+        const grade = adminData.grades.find(g => g.studentId === st.id && ((g.evaluationId && g.evaluationId === e.id) || g.unidad === e.titulo));
+        const val = grade ? grade.nota : '';
+        if (grade && !isNaN(grade.nota)) {
+          totalGraded++;
+          sumGrades += parseFloat(grade.nota);
+        }
+
+        html += `
+          <tr style="border-bottom:1px solid var(--border-light);">
+            <td style="padding:10px 8px;">
+              <strong>${st.nombre}</strong><br>
+              <span style="font-size:0.75rem; color:var(--text-muted);">@${st.username}</span>
+            </td>
+            <td style="padding:10px 8px;">
+              <span style="font-size:0.75rem; background:#E2E8F0; padding:2px 8px; border-radius:4px; font-weight:600;">${st.nivel || 'N/A'}</span>
+            </td>
+            <td style="padding:10px 8px; text-align:right;">
+              <input type="text" 
+                     inputmode="decimal"
+                     class="admin-eval-grade-input" 
+                     data-studentid="${st.id}" 
+                     value="${val}" 
+                     placeholder="Ej: 6.2"
+                     style="width:85px; padding:6px 8px; border:1px solid var(--border-light); border-radius:6px; font-size:0.95rem; font-weight:700; text-align:center; color:#0F172A;"
+                     oninput="this.value = this.value.replace(',', '.');">
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      listDiv.innerHTML = html;
+
+      const avgText = totalGraded > 0 ? (sumGrades / totalGraded).toFixed(1) : 'Sin notas';
+      document.getElementById('adminEvalSummary').innerHTML = `
+        <strong>${totalGraded} de ${targetStudents.length}</strong> alumnos calificados | Promedio: <strong style="color:var(--accent-orange);">${avgText}</strong>
+      `;
+    }
+
+    async function saveAdminBatchGrades() {
+      if(!currentAdminEvalId) return;
+      const e = adminData.evaluations.find(x => x.id === currentAdminEvalId);
+      if(!e) return;
+
+      const inputs = document.querySelectorAll('.admin-eval-grade-input');
+      const gradesData = {};
+      let hasError = false;
+
+      inputs.forEach(input => {
+        const raw = input.value.trim().replace(',', '.');
+        if(raw !== '') {
+          const num = parseFloat(raw);
+          if (isNaN(num) || num < 1.0 || num > 7.0) {
+            hasError = true;
+            input.style.borderColor = '#DC2626';
+            input.style.backgroundColor = '#FEE2E2';
+          } else {
+            input.style.borderColor = 'var(--border-light)';
+            input.style.backgroundColor = 'white';
+            gradesData[input.getAttribute('data-studentid')] = num;
+          }
+        } else {
+          input.style.borderColor = 'var(--border-light)';
+          input.style.backgroundColor = 'white';
+        }
+      });
+
+      if (hasError) {
+        alert('Por favor revisa las notas ingresadas. Deben ser valores numéricos del 1.0 al 7.0 (utilizando puntos, ejemplo: 6.2).');
+        return;
+      }
+
+      if (Object.keys(gradesData).length === 0) {
+        if (!confirm('No has ingresado ninguna calificación en la lista. ¿Deseas cerrar el modal?')) return;
+        closeAdminEvalDetailModal();
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('evaluacionId', e.id);
+      formData.append('unidad', e.titulo);
+      formData.append('puntajeTotal', '7.0');
+      formData.append('gradesData', JSON.stringify(gradesData));
+
+      try {
+        const res = await fetch('/api/paidagogo/grades/batch', {
+          method: 'POST',
+          body: formData
+        });
+        if (res.ok) {
+          alert('¡Calificaciones guardadas exitosamente!');
+          closeAdminEvalDetailModal();
+          loadOverview();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || 'Ocurrió un error al guardar las calificaciones');
+        }
+      } catch (err) {
+        alert('Error de conexión al guardar calificaciones');
+      }
     }
 
     function closeAdminEvalDetailModal() {
       document.getElementById('adminEvalDetailModal').style.display = 'none';
+      currentAdminEvalId = null;
     }
 
     function openClassModal() { document.getElementById('classModal').style.display = 'flex'; }
@@ -1005,13 +1181,12 @@
       else alert('Error al eliminar la evaluación.');
     }
 
-    function openEditGradeModal(id, unidad, obtenido, total, obs, studentId) {
+    function openEditGradeModal(id, unidad, notaVal, total, obs, studentId) {
       document.getElementById('editGradeId').value = id || '';
       document.getElementById('editGradeStudentId').value = studentId || '';
       document.getElementById('editGradeUnidad').value = unidad;
-      document.getElementById('editGradeObtenido').value = obtenido;
-      document.getElementById('editGradeTotal').value = total;
-      document.getElementById('editGradeObservaciones').value = obs;
+      document.getElementById('editGradeNota').value = (notaVal !== undefined && notaVal !== null && notaVal !== 0 && notaVal !== '0') ? notaVal : '';
+      document.getElementById('editGradeObservaciones').value = obs || '';
       document.getElementById('editGradeModal').style.display = 'flex';
     }
     function closeEditGradeModal() { document.getElementById('editGradeModal').style.display = 'none'; }
@@ -1020,11 +1195,18 @@
       e.preventDefault();
       const id = document.getElementById('editGradeId').value;
       const studentId = document.getElementById('editGradeStudentId').value;
+      const rawNota = document.getElementById('editGradeNota').value.trim().replace(',', '.');
+      const numNota = parseFloat(rawNota);
+
+      if (isNaN(numNota) || numNota < 1.0 || numNota > 7.0) {
+        alert('Por favor ingresa una nota válida entre 1.0 y 7.0 (ejemplo: 6.2).');
+        return;
+      }
+
       const payload = {
         studentId,
         unidad: document.getElementById('editGradeUnidad').value,
-        puntajeObtenido: document.getElementById('editGradeObtenido').value,
-        puntajeTotal: document.getElementById('editGradeTotal').value,
+        nota: numNota,
         observaciones: document.getElementById('editGradeObservaciones').value
       };
       const url = id ? ('/api/paidagogo/grades/' + id) : '/api/paidagogo/grades';
@@ -1035,6 +1217,7 @@
         body: JSON.stringify(payload)
       });
       if(res.ok) { closeEditGradeModal(); loadOverview(); }
+      else { alert('Error al guardar la calificación'); }
     });
 
     function openEditAttendanceModal(id, status, classId, studentId) {

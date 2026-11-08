@@ -179,7 +179,7 @@ app.get('/api/student/dashboard', authRole(['student', 'paidagogo', 'admin']), a
     const classesRes = await pool.query(classesQuery, classesParams);
     const evalRes = await pool.query('SELECT id, titulo, nivel, puntaje_total as "puntajeTotal" FROM evaluations WHERE nivel = $1 ORDER BY created_at ASC', [studentNivel]);
     const gradesRes = await pool.query(`
-      SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
+      SELECT id, student_id as "studentId", evaluation_id as "evaluationId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
       FROM grades 
       WHERE student_id = $1
     `, [userId]);
@@ -219,7 +219,7 @@ app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req,
 
     const studentsRes = await pool.query(studentsQuery, queryParams);
     const gradesRes = await pool.query(`
-      SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
+      SELECT id, student_id as "studentId", evaluation_id as "evaluationId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
       FROM grades
     `);
     const attRes = await pool.query('SELECT class_id as "classId", student_id as "studentId", status FROM attendance');
@@ -239,52 +239,27 @@ app.get('/api/paidagogo/students', authRole(['paidagogo', 'admin']), async (req,
 
 
 app.post('/api/paidagogo/grades', authRole(['paidagogo', 'admin']), async (req, res) => {
-  const { studentId, unidad, puntajeObtenido, puntajeTotal, observaciones } = req.body;
+  const { studentId, evaluacionId, evaluationId, unidad, nota: directNota, puntajeObtenido, puntajeTotal, observaciones } = req.body;
+  const evalId = evaluacionId || evaluationId || null;
 
-  const pTotal = parseFloat(puntajeTotal);
-  const pObtenido = parseFloat(puntajeObtenido);
-  const exigencia = pTotal * 0.6;
-  
-  let nota = 1.0;
-  if (pObtenido < exigencia) {
-    nota = (pObtenido / exigencia) * 3 + 1;
+  let nota = null;
+  let pTotal = 7.0;
+  let pObtenido = null;
+  let porcentaje = 0;
+
+  if (directNota !== undefined && directNota !== null && directNota !== '') {
+    nota = parseFloat(String(directNota).replace(',', '.'));
+    if (isNaN(nota)) nota = 1.0;
+    nota = Math.round(nota * 10) / 10;
+    if (nota < 1.0) nota = 1.0;
+    if (nota > 7.0) nota = 7.0;
+    pObtenido = nota;
+    pTotal = 7.0;
+    porcentaje = Math.round((nota / 7.0) * 100);
   } else {
-    nota = ((pObtenido - exigencia) / (pTotal * 0.4)) * 3 + 4;
-  }
-  nota = Math.round(nota * 10) / 10;
-  if(nota < 1.0) nota = 1.0;
-  if(nota > 7.0) nota = 7.0;
-
-  const porcentaje = Math.round((pObtenido / pTotal) * 100);
-  const newId = 'g_' + Date.now();
-
-  try {
-    await pool.query(
-      'INSERT INTO grades (id, student_id, unidad, puntaje_obtenido, puntaje_total, nota, porcentaje, observaciones) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-      [newId, studentId, unidad, pObtenido, pTotal, nota, porcentaje, observaciones || '']
-    );
-
-    res.json({ success: true, grade: { id: newId, studentId, unidad, puntajeObtenido: pObtenido, puntajeTotal: pTotal, nota, porcentaje, observaciones } });
-  } catch(err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al guardar nota' });
-  }
-});
-
-app.put('/api/paidagogo/grades/:id', authRole(['paidagogo', 'admin']), async (req, res) => {
-  const gradeId = req.params.id;
-  const { unidad, puntajeObtenido, puntajeTotal, observaciones } = req.body;
-
-  try {
-    const existing = await pool.query('SELECT * FROM grades WHERE id = $1', [gradeId]);
-    if(existing.rows.length === 0) return res.status(404).json({ error: 'Calificación no encontrada' });
-    const g = existing.rows[0];
-
-    const pTotal = puntajeTotal !== undefined ? parseFloat(puntajeTotal) : parseFloat(g.puntaje_total);
-    const pObtenido = puntajeObtenido !== undefined ? parseFloat(puntajeObtenido) : parseFloat(g.puntaje_obtenido);
+    pTotal = parseFloat(puntajeTotal) || 7.0;
+    pObtenido = parseFloat(puntajeObtenido) || 0;
     const exigencia = pTotal * 0.6;
-    
-    let nota = 1.0;
     if (pObtenido < exigencia) {
       nota = (pObtenido / exigencia) * 3 + 1;
     } else {
@@ -293,15 +268,69 @@ app.put('/api/paidagogo/grades/:id', authRole(['paidagogo', 'admin']), async (re
     nota = Math.round(nota * 10) / 10;
     if(nota < 1.0) nota = 1.0;
     if(nota > 7.0) nota = 7.0;
+    porcentaje = Math.round((pObtenido / pTotal) * 100);
+  }
 
-    const porcentaje = Math.round((pObtenido / pTotal) * 100);
+  const newId = 'g_' + Date.now();
+
+  try {
+    await pool.query(
+      'INSERT INTO grades (id, student_id, evaluation_id, unidad, puntaje_obtenido, puntaje_total, nota, porcentaje, observaciones) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      [newId, studentId, evalId, unidad, pObtenido, pTotal, nota, porcentaje, observaciones || '']
+    );
+
+    res.json({ success: true, grade: { id: newId, studentId, evaluationId: evalId, unidad, puntajeObtenido: pObtenido, puntajeTotal: pTotal, nota, porcentaje, observaciones } });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al guardar nota' });
+  }
+});
+
+app.put('/api/paidagogo/grades/:id', authRole(['paidagogo', 'admin']), async (req, res) => {
+  const gradeId = req.params.id;
+  const { unidad, nota: directNota, puntajeObtenido, puntajeTotal, observaciones, evaluacionId, evaluationId } = req.body;
+
+  try {
+    const existing = await pool.query('SELECT * FROM grades WHERE id = $1', [gradeId]);
+    if(existing.rows.length === 0) return res.status(404).json({ error: 'Calificación no encontrada' });
+    const g = existing.rows[0];
+
+    let nota = null;
+    let pTotal = puntajeTotal !== undefined ? parseFloat(puntajeTotal) : parseFloat(g.puntaje_total);
+    let pObtenido = puntajeObtenido !== undefined ? parseFloat(puntajeObtenido) : parseFloat(g.puntaje_obtenido);
+    let porcentaje = g.porcentaje;
+
+    if (directNota !== undefined && directNota !== null && directNota !== '') {
+      nota = parseFloat(String(directNota).replace(',', '.'));
+      if (isNaN(nota)) nota = 1.0;
+      nota = Math.round(nota * 10) / 10;
+      if (nota < 1.0) nota = 1.0;
+      if (nota > 7.0) nota = 7.0;
+      pObtenido = nota;
+      pTotal = 7.0;
+      porcentaje = Math.round((nota / 7.0) * 100);
+    } else if (puntajeObtenido !== undefined || puntajeTotal !== undefined) {
+      const exigencia = pTotal * 0.6;
+      if (pObtenido < exigencia) {
+        nota = (pObtenido / exigencia) * 3 + 1;
+      } else {
+        nota = ((pObtenido - exigencia) / (pTotal * 0.4)) * 3 + 4;
+      }
+      nota = Math.round(nota * 10) / 10;
+      if(nota < 1.0) nota = 1.0;
+      if(nota > 7.0) nota = 7.0;
+      porcentaje = Math.round((pObtenido / pTotal) * 100);
+    } else {
+      nota = parseFloat(g.nota);
+    }
 
     const newUnidad = unidad || g.unidad;
     const newObs = observaciones !== undefined ? observaciones : g.observaciones;
+    const newEvalId = evaluacionId || evaluationId || g.evaluation_id || null;
 
     await pool.query(
-      'UPDATE grades SET unidad = $1, puntaje_obtenido = $2, puntaje_total = $3, nota = $4, porcentaje = $5, observaciones = $6 WHERE id = $7',
-      [newUnidad, pObtenido, pTotal, nota, porcentaje, newObs, gradeId]
+      'UPDATE grades SET evaluation_id = $1, unidad = $2, puntaje_obtenido = $3, puntaje_total = $4, nota = $5, porcentaje = $6, observaciones = $7 WHERE id = $8',
+      [newEvalId, newUnidad, pObtenido, pTotal, nota, porcentaje, newObs, gradeId]
     );
 
     res.json({ success: true });
@@ -347,7 +376,7 @@ app.get('/api/admin/overview', authRole(['admin']), async (req, res) => {
   try {
     const usersRes = await pool.query('SELECT id, username, nombre, email, role, nivel FROM users');
     const gradesRes = await pool.query(`
-      SELECT id, student_id as "studentId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
+      SELECT id, student_id as "studentId", evaluation_id as "evaluationId", unidad, puntaje_obtenido as "puntajeObtenido", puntaje_total as "puntajeTotal", nota, porcentaje, observaciones 
       FROM grades
     `);
     const attRes = await pool.query('SELECT id, class_id as "classId", student_id as "studentId", status FROM attendance');
@@ -443,42 +472,88 @@ app.post('/api/paidagogo/noa', authRole(['paidagogo', 'admin']), upload.single('
 
 app.post('/api/paidagogo/grades/batch', authRole(['paidagogo', 'admin']), upload.single('archivoNoa'), async (req, res) => {
   try {
-    const { evaluacionId, unidad, puntajeTotal, gradesData } = req.body;
-    const pTotal = parseFloat(puntajeTotal);
-    const parsedGrades = JSON.parse(gradesData);
-    
-    for (const [studentId, puntajeObtenido] of Object.entries(parsedGrades)) {
-      if(puntajeObtenido === '') continue;
-      const pObtenido = parseFloat(puntajeObtenido);
-      const exigencia = pTotal * 0.6;
-      let nota = 1.0;
-      if (pObtenido < exigencia) {
-        nota = (pObtenido / exigencia) * 3 + 1;
-      } else {
-        nota = ((pObtenido - exigencia) / (pTotal * 0.4)) * 3 + 4;
+    const { evaluacionId, evaluationId, unidad, gradesData } = req.body;
+    const evalId = evaluacionId || evaluationId || null;
+
+    let parsedGrades = gradesData;
+    if (typeof gradesData === 'string') {
+      try {
+        parsedGrades = JSON.parse(gradesData);
+      } catch (e) {
+        parsedGrades = {};
       }
+    }
+
+    if (!parsedGrades || typeof parsedGrades !== 'object') {
+      return res.status(400).json({ error: 'Datos de notas inválidos' });
+    }
+
+    // Resolver título de la evaluación si no viene explícito
+    let evalTitulo = unidad;
+    if (evalId && !evalTitulo) {
+      const evalCheck = await pool.query('SELECT titulo FROM evaluations WHERE id = $1', [evalId]);
+      if (evalCheck.rows.length > 0) {
+        evalTitulo = evalCheck.rows[0].titulo;
+      }
+    }
+    if (!evalTitulo) evalTitulo = 'Evaluación';
+
+    for (const [studentId, rawVal] of Object.entries(parsedGrades)) {
+      if (rawVal === '' || rawVal === null || rawVal === undefined) continue;
+
+      const cleanStr = String(rawVal).replace(',', '.').trim();
+      let nota = parseFloat(cleanStr);
+      if (isNaN(nota)) continue;
+
       nota = Math.round(nota * 10) / 10;
-      if(nota < 1.0) nota = 1.0; if(nota > 7.0) nota = 7.0;
-      const porcentaje = Math.round((pObtenido / pTotal) * 100);
-      const newId = 'g_' + Date.now() + '_' + studentId;
-      
-      await pool.query(
-        'INSERT INTO grades (id, student_id, unidad, puntaje_obtenido, puntaje_total, nota, porcentaje, observaciones) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-        [newId, studentId, unidad, pObtenido, pTotal, nota, porcentaje, '']
-      );
+      if (nota < 1.0) nota = 1.0;
+      if (nota > 7.0) nota = 7.0;
+
+      const pTotal = 7.0;
+      const pObtenido = nota;
+      const porcentaje = Math.round((nota / 7.0) * 100);
+
+      // Buscar si el estudiante ya tiene registro para esta evaluación/unidad
+      let existing = null;
+      if (evalId) {
+        existing = await pool.query(
+          'SELECT id FROM grades WHERE student_id = $1 AND (evaluation_id = $2 OR unidad = $3)',
+          [studentId, evalId, evalTitulo]
+        );
+      } else {
+        existing = await pool.query(
+          'SELECT id FROM grades WHERE student_id = $1 AND unidad = $2',
+          [studentId, evalTitulo]
+        );
+      }
+
+      if (existing && existing.rows.length > 0) {
+        const gradeId = existing.rows[0].id;
+        await pool.query(
+          'UPDATE grades SET evaluation_id = $1, unidad = $2, puntaje_obtenido = $3, puntaje_total = $4, nota = $5, porcentaje = $6 WHERE id = $7',
+          [evalId, evalTitulo, pObtenido, pTotal, nota, porcentaje, gradeId]
+        );
+      } else {
+        const newId = 'g_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        await pool.query(
+          'INSERT INTO grades (id, student_id, evaluation_id, unidad, puntaje_obtenido, puntaje_total, nota, porcentaje, observaciones) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+          [newId, studentId, evalId, evalTitulo, pObtenido, pTotal, nota, porcentaje, '']
+        );
+      }
     }
 
     if (req.file) {
       const url = '/uploads/' + req.file.filename;
       await pool.query(
         'INSERT INTO nota_noa (pedagogo_id, evaluacion_id, archivo_url) VALUES ($1, $2, $3)',
-        [req.session.user.id, evaluacionId, url]
+        [req.session.user.id, evalId, url]
       );
     }
+
     res.json({ success: true });
   } catch(err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error del servidor' });
+    console.error('Error al guardar notas batch:', err);
+    res.status(500).json({ error: 'Error del servidor al guardar las notas' });
   }
 });
 
@@ -486,15 +561,16 @@ app.post('/api/paidagogo/grades/batch', authRole(['paidagogo', 'admin']), upload
 app.post('/api/admin/evaluations', authRole(['admin']), async (req, res) => {
   const { titulo, nivel, puntajeTotal } = req.body;
   const newId = 'e_' + Date.now();
+  const pTotal = parseFloat(puntajeTotal) || 7.0;
   try {
     await pool.query(
       'INSERT INTO evaluations (id, titulo, nivel, puntaje_total) VALUES ($1, $2, $3, $4)',
-      [newId, titulo, nivel, puntajeTotal]
+      [newId, titulo, nivel, pTotal]
     );
     res.json({ success: true, id: newId });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error' });
+    res.status(500).json({ error: 'Error al crear la evaluación' });
   }
 });
 

@@ -160,21 +160,24 @@
     <!-- MODAL EVALUACION -->
     <div id="evalModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000;">
       <div style="background:white; padding:30px; border-radius: var(--radius-md); width:90%; max-width:600px; max-height:90vh; overflow-y:auto;">
-        <h3 id="modalEvalTitle" style="margin-bottom: 10px;"></h3>
-        <p id="modalEvalDesc" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px;"></p>
+        <h3 id="modalEvalTitle" style="margin-bottom: 8px;"></h3>
+        <p id="modalEvalDesc" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:18px; line-height:1.4;"></p>
         
         <form id="evalGradesForm">
           <input type="hidden" id="evalGradesId">
           <input type="hidden" id="evalGradesTotal">
           
           <div style="margin-bottom:20px;">
-            <h4 style="margin-bottom:10px;"><i class="ri-file-chart-line text-blue"></i> Ingreso de Notas (Puntaje Obtenido)</h4>
-            <div id="evalStudentsList" style="max-height:350px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:var(--radius-sm); margin-bottom:15px;"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <h4 style="margin:0;"><i class="ri-file-chart-line text-blue"></i> Lista de Estudiantes</h4>
+              <span style="font-size:0.8rem; background:#EFF6FF; color:#0284C7; font-weight:600; padding:3px 8px; border-radius:4px;">Escala: 1.0 a 7.0</span>
+            </div>
+            <div id="evalStudentsList" style="max-height:380px; overflow-y:auto; border:1px solid var(--border-light); padding:12px; border-radius:var(--radius-sm); margin-bottom:15px; background:#FAFAFA;"></div>
           </div>
 
           <div style="display:flex; justify-content:flex-end; gap:12px;">
-            <button type="button" onclick="closeEvalModal()" class="btn btn-outline">Cerrar</button>
-            <button type="submit" class="btn btn-primary" style="background:#0284C7;">Guardar Notas</button>
+            <button type="button" onclick="closeEvalModal()" class="btn btn-outline">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:#0284C7;"><i class="ri-save-line"></i> Guardar Notas de Todos</button>
           </div>
         </form>
       </div>
@@ -269,9 +272,12 @@
       allEvaluations.forEach(e => {
         html += `
         <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-left:4px solid var(--accent-orange); border-radius:var(--radius-md); padding:16px; margin-bottom:16px; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'" onclick="openEvalModal('${e.id}')">
-          <span style="font-size:0.75rem; background:#FFEDD5; color:var(--accent-orange); font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">EVALUACIÓN</span>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.75rem; background:#FFEDD5; color:var(--accent-orange); font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;">EVALUACIÓN / PRUEBA</span>
+            <span style="font-size:0.8rem; color:var(--accent-orange); font-weight:600;"><i class="ri-edit-line"></i> Calificar</span>
+          </div>
           <h4 style="margin:8px 0;">${e.titulo}</h4>
-          <p style="font-size:0.85rem; color:var(--text-secondary); margin:0;">Puntaje Total: ${e.puntajeTotal}</p>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin:0;">Nivel: ${e.nivel || 'General'} | Escala 1.0 a 7.0</p>
         </div>
         `;
       });
@@ -357,21 +363,50 @@
       const e = allEvaluations.find(x => x.id === evalId);
       if(!e) return;
       document.getElementById('modalEvalTitle').textContent = e.titulo;
-      document.getElementById('modalEvalDesc').textContent = `Ingresa el puntaje obtenido por cada estudiante. El puntaje total es ${e.puntajeTotal}.`;
+      document.getElementById('modalEvalDesc').textContent = `Ingresa la nota de cada estudiante (escala de 1.0 a 7.0, utilizando punto para decimales, ej: 6.2). Si dejas un campo vacío, no se registrará nota.`;
       document.getElementById('evalGradesId').value = evalId;
-      document.getElementById('evalGradesTotal').value = e.puntajeTotal;
+      document.getElementById('evalGradesTotal').value = e.puntajeTotal || 7.0;
       
       const listDiv = document.getElementById('evalStudentsList');
-      listDiv.innerHTML = currentStudents.map(s => {
-        const existingGrade = s.grades && s.grades.find(g => g.unidad === e.titulo);
-        const prefillValue = existingGrade ? existingGrade.puntajeObtenido : '';
-        return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-size:0.9rem; font-weight:600;">${s.nombre}</span>
-          <input type="number" step="0.5" class="grade-input" data-studentid="${s.id}" value="${prefillValue}" placeholder="Nota" style="width:80px; padding:4px 8px; border:1px solid var(--border-light); border-radius:4px;">
-        </div>
+      if (!currentStudents || currentStudents.length === 0) {
+        listDiv.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding:15px; margin:0;">No hay estudiantes asignados a este nivel.</p>';
+      } else {
+        listDiv.innerHTML = `
+          <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border-light); text-align:left;">
+                <th style="padding:8px 6px;">Estudiante</th>
+                <th style="padding:8px 6px; width:140px; text-align:right;">Nota (1.0 - 7.0)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${currentStudents.map(s => {
+                const existingGrade = s.grades && s.grades.find(g => (g.evaluationId && g.evaluationId === e.id) || g.unidad === e.titulo);
+                const prefillValue = existingGrade ? existingGrade.nota : '';
+                return `
+                <tr style="border-bottom:1px solid var(--border-light);">
+                  <td style="padding:10px 6px;">
+                    <strong style="color:var(--text-primary); font-size:0.95rem;">${s.nombre}</strong><br>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">${s.nivel || ''}</span>
+                    ${existingGrade ? `<span style="display:inline-block; margin-left:8px; font-size:0.75rem; color:var(--accent-orange); font-weight:700; background:#FFF7ED; padding:1px 6px; border-radius:4px;">Nota actual: ${existingGrade.nota}</span>` : ''}
+                  </td>
+                  <td style="padding:10px 6px; text-align:right;">
+                    <input type="text" 
+                           inputmode="decimal" 
+                           class="grade-input" 
+                           data-studentid="${s.id}" 
+                           value="${prefillValue}" 
+                           placeholder="Ej: 6.2" 
+                           style="width:90px; padding:6px 10px; border:1px solid var(--border-light); border-radius:6px; font-size:0.95rem; font-weight:700; text-align:center; color:#0F172A;"
+                           oninput="this.value = this.value.replace(',', '.');">
+                  </td>
+                </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
         `;
-      }).join('');
+      }
       document.getElementById('evalModal').style.display = 'flex';
     }
 
@@ -382,32 +417,64 @@
     document.getElementById('evalGradesForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const evalId = document.getElementById('evalGradesId').value;
-      const evalTotal = document.getElementById('evalGradesTotal').value;
       const evaluation = allEvaluations.find(x => x.id === evalId);
       const inputs = document.querySelectorAll('.grade-input');
       const gradesData = {};
+      let hasError = false;
+
       inputs.forEach(input => {
-        if (input.value.trim() !== '') {
-          gradesData[input.getAttribute('data-studentid')] = input.value;
+        const raw = input.value.trim().replace(',', '.');
+        if (raw !== '') {
+          const num = parseFloat(raw);
+          if (isNaN(num) || num < 1.0 || num > 7.0) {
+            hasError = true;
+            input.style.borderColor = '#DC2626';
+            input.style.backgroundColor = '#FEE2E2';
+          } else {
+            input.style.borderColor = 'var(--border-light)';
+            input.style.backgroundColor = 'white';
+            gradesData[input.getAttribute('data-studentid')] = num;
+          }
+        } else {
+          input.style.borderColor = 'var(--border-light)';
+          input.style.backgroundColor = 'white';
         }
       });
+
+      if (hasError) {
+        alert('Por favor revisa las notas ingresadas. Deben ser valores numéricos entre 1.0 y 7.0 (ejemplo: 6.2).');
+        return;
+      }
+
+      if (Object.keys(gradesData).length === 0) {
+        if (!confirm('No has ingresado ninguna calificación. ¿Deseas cerrar sin guardar?')) {
+          return;
+        }
+        closeEvalModal();
+        return;
+      }
 
       const formData = new FormData();
       formData.append('evaluacionId', evalId);
       formData.append('unidad', evaluation ? evaluation.titulo : 'Evaluación');
-      formData.append('puntajeTotal', evalTotal);
+      formData.append('puntajeTotal', '7.0');
       formData.append('gradesData', JSON.stringify(gradesData));
 
-      const res = await fetch('/api/paidagogo/grades/batch', {
-        method: 'POST',
-        body: formData
-      });
-      if (res.ok) {
-        alert('Notas y NOA guardados exitosamente.');
-        closeEvalModal();
-        loadStudents();
-      } else {
-        alert('Ocurrió un error al guardar.');
+      try {
+        const res = await fetch('/api/paidagogo/grades/batch', {
+          method: 'POST',
+          body: formData
+        });
+        if (res.ok) {
+          alert('¡Calificaciones guardadas exitosamente!');
+          closeEvalModal();
+          loadStudents();
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          alert(errData.error || 'Ocurrió un error al guardar las calificaciones.');
+        }
+      } catch (err) {
+        alert('Error de conexión al guardar calificaciones.');
       }
     });
 
